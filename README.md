@@ -22,11 +22,6 @@ If you don't already have it installed go to https://pypi.org/project/pipx/ for 
 
         pipx install botsley
 
-#### And then run it!
-
-        botsley run
-
-
 ### From GitHub
 
 Clone the repository

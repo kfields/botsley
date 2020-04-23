@@ -1,5 +1,6 @@
 import inspect
 from copy import copy
+from botsley.run.behavior import Behavior
 from botsley.run.policymeta import PolicyMeta
 
 #
@@ -27,10 +28,9 @@ define = lambda t, a: Rule(t, a)
 #
 # Policy
 #
-class Policy(metaclass=PolicyMeta):
+class Policy(Behavior, metaclass=PolicyMeta):
     def __init__(self):
-        self.parent = None
-        #self.rules = []
+        super().__init__()
         self.rules = self.__class__.rules
 
     def add(self, r):

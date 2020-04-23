@@ -1,6 +1,7 @@
 import unittest
 
-from botsley.run.task import *
+from botsley.run.behavior import *
+
 
 class Test(unittest.TestCase):
     def test(self):

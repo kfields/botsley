@@ -16,10 +16,7 @@ class MyAgent(Agent):
         super().__init__()
         #print(self.__class__.rules)
         self.post(attempt_(Achieve, _I, _jump))
-    '''
-    async def main(self):
-        self.post(attempt_(Achieve, _I, _jump))
-    '''
+
     @_(OnAttempt(Achieve, _I, _jump))
     async def howhigh(self, msg):
         print('How high?')

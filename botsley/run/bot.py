@@ -5,13 +5,15 @@ from uuid import uuid1
 from botsley.app import logger
 from botsley.run import *
 from botsley.run import _impasse
-from botsley.run.task import Task, Module, TS_RUNNING, TS_SUCCESS
+#from botsley.run.task import Task, Module, TS_RUNNING, TS_SUCCESS
+from botsley.run.behavior import *
 from botsley.run.context import Context
 from botsley.run.policy import Policy
 
-class Bot(Task):
+class Bot(Policy):
     def __init__(self):
         super().__init__()
+        self.policy = self
         self.id = uuid1()
         self.ctx = Context()
         self.tasks = []
