@@ -1,0 +1,11 @@
+#
+# Hello World
+#
+
+class HelloWorld
+
+  def constructor()
+    say 'Hello World'
+    
+  def say(say $t)
+    | print t

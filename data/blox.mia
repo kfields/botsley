@@ -1,0 +1,94 @@
+#
+#Blocks World
+#
+
+class BloxBrain
+
+	predicate isClear(bool)
+
+	def BloxBrain()
+	
+		BloxContext::
+
+			Table1 `Table: isClear true
+
+			Block1 `Block: onTop Table1
+
+			Block2 `Block: onTop Block1
+
+			Block3 `Block:
+				onTop Block2
+				isClear true
+
+			stack Block1 `on Block2
+
+			stack Block2 `on Block3
+
+		blox `context BloxContext
+
+
+	class Blox
+
+		def Blox(blox)
+			pass
+			
+		def Impasse(_impasse)
+			where
+				($g `Goal) status Active
+			-->
+				* @ /$g
+			!=>
+				halt
+				
+		def GoalElab(+ $g `Goal)
+			+ $g status Active
+
+		def NotGoalElab(- $g `Goal)
+			- $g status Active
+				
+		def Stack(stack $x `on $y -> $g)
+			where
+				not $x isClear true
+			-->
+				/clear $x
+			==>
+				return
+
+			where
+				not $y isClear true
+			-->
+				/clear $y
+			==>
+				return
+			
+			where
+				$x onTop $z
+			-->
+				- $x onTop $z
+				
+			+ $x onTop $y
+			
+			- $g
+
+		def Clear(clear $x)
+			where
+				$x beneath $y
+				$z isClear true
+				$z != $x
+				$z != $y
+			-->
+				* /stack $y `on $z
+
+		def NotOnTopElab(- $x onTop $y)
+			- $y beneath $x
+			+ $y isClear true
+
+		def OntopElab(+ $x onTop $y)
+			where
+				($y `Block) isClear true
+			-->
+				- $y isClear true
+			where
+				$x onTop $y
+			-->
+				+ $y beneath $x

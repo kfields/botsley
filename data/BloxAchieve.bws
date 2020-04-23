@@ -1,0 +1,104 @@
+//
+//Blocks World - Achieve
+//
+
+namespace BwBrainTest
+
+    brain BloxAchieveBrain
+
+        predicate isClear(bool)
+
+        method BloxAchieveBrain(bloxAchieveBrain)
+        
+            context BloxAchieveContext
+
+                Table: Table1
+                    isClear true
+
+                Block: Block1
+                    onTop Table1
+                    isClear true
+
+                Block: Block2
+                    onTop Block1
+                    isClear true
+
+                Block: Block3
+                    onTop Block2
+                    isClear true
+
+                Achieve: Block1 on Block2
+
+                Achieve: Block2 on Block3
+
+            blox :context BloxAchieveContext
+        
+
+        expert BloxAchieve
+
+            method BloxAchieve(blox)
+                
+            method Impasse()
+                where
+                    <Goal: $g> status Active
+                    -->
+                    * @ /$g
+                    !==>
+                    halt
+                    
+            method GoalElab(+ <Goal: $g>)
+                + $g status Active
+
+            method NotGoalElab(- <Goal: $g>)
+                - $g status Active
+                    
+            method AchieveXonY(@ Achieve: $x on $y -> $g)
+                stack $x :on $y
+                - $g
+                
+            method Stack(stack $x :on $y)
+                where
+                    ! $x isClear true
+                    -->
+                    /clear $x
+                    ==>
+                    fail
+                //else
+                where
+                    ! $y isClear true
+                    -->
+                    /clear $y
+                    ==>
+                    fail
+                //else
+                
+                where
+                    $x onTop $z
+                    -->
+                    - $x onTop $z
+                    
+                + $x onTop $y
+                
+            method Clear(clear $x)
+                where
+                    $x beneath $y
+                    $z isClear true
+                    $z != $x
+                    $z != $y
+                    -->
+                    * /stack $y :on $z
+
+            method NotOnTopElab(- $x onTop $y)
+                - $y beneath $x
+                + $y isClear true
+
+            method OntopElab(+ $x onTop $y)
+                where
+                    <Block: $y> isClear true
+                    -->
+                    - $y isClear true
+                where
+                    $x onTop $y
+                    -->
+                    + $y beneath $x
+

@@ -1,0 +1,28 @@
+namespace BwBrainTest
+
+    brain SelectTestBrain
+
+        predicate Perform: writeLine(object)
+
+        method SelectTestBrain(selectTestBrain)
+            selectTest
+            
+        expert SelectTest
+        
+            method SelectTest(selectTest)
+            
+                { ConsoleKeyInfo cki = Console.ReadKey(); }
+                { var c = cki.KeyChar; }
+                
+                select
+                    case { c == 'a' }
+                        writeLine 1
+                        
+                    case { c == 'b' }
+                        writeLine 2
+                        
+                    case { c == 'c' }
+                        writeLine 3
+                    
+            method WriteLine(writeLine $text)
+                { Console.WriteLine(text); }

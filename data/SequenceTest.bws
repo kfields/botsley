@@ -1,0 +1,33 @@
+namespace BwBrainTest
+
+    brain SequenceTestBrain
+
+        predicate Perform: writeLine(object)
+
+        method SequenceTestBrain(sequenceTestBrain)
+            sequenceTest
+            
+        expert SequenceTest
+            method SequenceTest(sequenceTest)
+            
+                writeLine "a"
+                do
+                    writeLine 1
+                    writeLine 2
+                    writeLine 3
+                    
+                writeLine "b"
+                do
+                    writeLine 1
+                    writeLine 2
+                    writeLine 3
+                    
+                writeLine "c"
+                do
+                    writeLine 1
+                    writeLine 2
+                    writeLine 3
+                    
+            method WriteLine(writeLine $text)
+                {Console.WriteLine(text);}
+                    

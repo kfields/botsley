@@ -1,0 +1,4 @@
+wheel
+sly==0.4
+click==7.1.1
+colorlog==4.1.0

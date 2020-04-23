@@ -1,0 +1,59 @@
+//
+// Counting : Simple Proposal Test
+//
+
+namespace BwBrainTest
+
+    brain CountingBrain
+
+        predicate Perform: countTo(int)
+        predicate achieved(bool)
+        predicate value(int)
+
+        method CountingBrain(countingBrain)
+            context CountingContext
+                countTo 5
+                    value 0
+
+            * /counting :context CountingContext
+
+        
+        expert Counting(Deliberator)
+
+            method Counting(counting)
+                {Console.WriteLine("Counting in sub-contexts");}
+                
+            method Impasse()
+                where
+                    <Goal: $g> status Active
+                    -->
+                    * @ /$g
+                    !==>
+                    halt
+                    
+            method GoalElab(+ <Goal: $g>)
+                + $g status Active
+
+            method NotGoalElab(- <Goal: $g>)
+                - $g status Active
+
+            method IncrementPropose(countTo $v1 -> $g)
+                where
+                    $g value $v2
+                    //$v1 == $v2
+                    {v1 == v2}
+                    -->
+                    succeed
+                //else
+                * /increment $g
+                return
+
+            method IncrementApply(increment $g)
+                where
+                    $g value $v1
+                    -->
+                    - $g value $v1
+                    {var v2 = v1 + 1;}
+                    + $g value {v2}
+                    {Console.WriteLine("{0} ...", v2);}            
+

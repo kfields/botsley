@@ -1,0 +1,88 @@
+namespace BwBrainTest
+
+    brain TravelBrain
+
+        predicate distance(float)
+        predicate cash(float)
+
+        method TravelBrain(travelBrain)
+
+            context TravelContext
+
+                Taxi: Taxi1
+                
+                Place: Home1
+                    distanceTo Restaurant1 :distance 8
+                    
+                Place: Restaurant1
+
+                Self
+                    location Home1
+                    cash 20.0f
+                    
+                travelTo Restaurant1
+                
+            travel :context TravelContext
+
+        expert Travel
+
+            method Travel(travel)
+                        
+            method TravelByFoot(travelTo $destination)
+                where
+                    Self location $origin
+                    $origin distanceTo $destination :distance {(x) => x <= 2}
+                    !==>
+                    throw
+                    
+                * walkTo $destination
+                    
+            method Walk(walkTo $destination)
+                + Self location $destination
+                
+            method TravelByTaxi(travelTo $destination)
+                where
+                    Self location $origin
+                    $origin distanceTo $destination :distance $distance
+                    Self cash {(x) => x >= 1.5 + .5 * distance}
+                    -->
+                    task
+                        * callTaxi $origin
+                        * ride :from $origin :to $destination
+                        * payDriver :from $origin :to $destination            
+                    !==>
+                    throw
+                        
+            method CallTaxi(callTaxi $origin)
+                + Taxi1 location $origin
+                
+            method Ride(ride :from $origin :to $destination)
+                where
+                    Taxi1 location $origin
+                    Self location $origin
+                    -->
+                    -+ Taxi1 location $destination
+                    -+ Self location $destination
+                
+            method PayDriver(payDriver :from $origin :to $destination)
+                where 
+                    $origin distanceTo $destination :distance $distance
+                    Self cash $cash
+                    {cash >= 1.5 + .5 * distance}
+                    -->            
+                    -+ Self cash { cash - (1.5 + .5 * distance) }
+                
+            method Impasse()
+                where
+                    <Goal: $g> status Active
+                    -->
+                    * @ /$g
+                    !==>
+                    halt
+
+            method GoalElab(+ <Goal: $g>)
+                + $g status Active
+
+            method NotGoalElab(- <Goal: $g>)
+                - $g status Active
+

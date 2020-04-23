@@ -1,0 +1,722 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/sly)
+
+Unused terminals:
+
+    RETURN
+    LONGFATARROW
+    COMMA
+    FATARROW
+    SEMICOLON
+    THINARROW
+    COLON
+    PREDICATE
+    NLONGTHINARROW
+    EQ
+    DBLCOLON
+    LONGTHINARROW
+    NEWLINE
+    NTHINARROW
+    NFATARROW
+    ASSIGN
+    NEQ
+    WS
+    DIV
+    MULT
+    NLONGFATARROW
+    EOF
+    NUMBER
+    AT
+    PLUS
+    LT
+    MINUS
+    GT
+    GRAVE
+    IF
+
+Grammar
+
+Rule 0     S' -> Root
+Rule 1     Root -> <empty>
+Rule 2     Root -> Body
+Rule 3     Root -> Block TERMINATOR
+Rule 4     Block -> INDENT Body DEDENT
+Rule 5     Body -> Line
+Rule 6     Body -> Body TERMINATOR Line
+Rule 7     Body -> Body TERMINATOR
+Rule 8     Line -> Expression
+Rule 9     Line -> Statement
+Rule 10    Expression -> Clause
+Rule 11    Expression -> Term
+Rule 12    Term -> VARIABLE
+Rule 13    Term -> NOUN
+Rule 14    Term -> STRING
+Rule 15    Term -> SNIPPET
+Rule 16    ParExpr -> LPAR Expression RPAR
+Rule 17    ParExpr -> LPAR RPAR
+Rule 18    Statement -> Class
+Rule 19    Statement -> Method
+Rule 20    Class -> CLASS Identifier Block
+Rule 21    Method -> DEF Identifier ParExpr Block
+Rule 22    Clause -> Expression VERB Expression
+Rule 23    Clause -> Expression VERB
+Rule 24    Clause -> VERB Expression
+Rule 25    Clause -> VERB
+Rule 26    Clause -> Expression
+Rule 27    Identifier -> VERB
+Rule 28    Identifier -> NOUN
+
+Terminals, with rules where they appear
+
+ASSIGN               : 
+AT                   : 
+CLASS                : 20
+COLON                : 
+COMMA                : 
+DBLCOLON             : 
+DEDENT               : 4
+DEF                  : 21
+DIV                  : 
+EOF                  : 
+EQ                   : 
+FATARROW             : 
+GRAVE                : 
+GT                   : 
+IF                   : 
+INDENT               : 4
+LONGFATARROW         : 
+LONGTHINARROW        : 
+LPAR                 : 16 17
+LT                   : 
+MINUS                : 
+MULT                 : 
+NEQ                  : 
+NEWLINE              : 
+NFATARROW            : 
+NLONGFATARROW        : 
+NLONGTHINARROW       : 
+NOUN                 : 13 28
+NTHINARROW           : 
+NUMBER               : 
+PLUS                 : 
+PREDICATE            : 
+RETURN               : 
+RPAR                 : 16 17
+SEMICOLON            : 
+SNIPPET              : 15
+STRING               : 14
+TERMINATOR           : 3 6 7
+THINARROW            : 
+VARIABLE             : 12
+VERB                 : 22 23 24 25 27
+WS                   : 
+error                : 
+
+Nonterminals, with rules where they appear
+
+Block                : 3 20 21
+Body                 : 2 4 6 7
+Class                : 18
+Clause               : 10
+Expression           : 8 16 22 22 23 24 26
+Identifier           : 20 21
+Line                 : 5 6
+Method               : 19
+ParExpr              : 21
+Root                 : 0
+Statement            : 9
+Term                 : 11
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . Root
+    (1) Root -> .
+    (2) Root -> . Body
+    (3) Root -> . Block TERMINATOR
+    (5) Body -> . Line
+    (6) Body -> . Body TERMINATOR Line
+    (7) Body -> . Body TERMINATOR
+    (4) Block -> . INDENT Body DEDENT
+    (8) Line -> . Expression
+    (9) Line -> . Statement
+    (10) Expression -> . Clause
+    (11) Expression -> . Term
+    (18) Statement -> . Class
+    (19) Statement -> . Method
+    (22) Clause -> . Expression VERB Expression
+    (23) Clause -> . Expression VERB
+    (24) Clause -> . VERB Expression
+    (25) Clause -> . VERB
+    (26) Clause -> . Expression
+    (12) Term -> . VARIABLE
+    (13) Term -> . NOUN
+    (14) Term -> . STRING
+    (15) Term -> . SNIPPET
+    (20) Class -> . CLASS Identifier Block
+    (21) Method -> . DEF Identifier ParExpr Block
+
+    $end            reduce using rule 1 (Root -> .)
+    INDENT          shift and go to state 5
+    VERB            shift and go to state 17
+    VARIABLE        shift and go to state 4
+    NOUN            shift and go to state 3
+    STRING          shift and go to state 15
+    SNIPPET         shift and go to state 11
+    CLASS           shift and go to state 6
+    DEF             shift and go to state 13
+
+    Root                           shift and go to state 1
+    Clause                         shift and go to state 12
+    Expression                     shift and go to state 10
+    Class                          shift and go to state 14
+    Line                           shift and go to state 9
+    Statement                      shift and go to state 2
+    Body                           shift and go to state 7
+    Term                           shift and go to state 8
+    Method                         shift and go to state 18
+    Block                          shift and go to state 16
+
+state 1
+
+    (0) S' -> Root .
+
+
+
+state 2
+
+    (9) Line -> Statement .
+
+    DEDENT          reduce using rule 9 (Line -> Statement .)
+    TERMINATOR      reduce using rule 9 (Line -> Statement .)
+    $end            reduce using rule 9 (Line -> Statement .)
+
+
+state 3
+
+    (13) Term -> NOUN .
+
+    VERB            reduce using rule 13 (Term -> NOUN .)
+    TERMINATOR      reduce using rule 13 (Term -> NOUN .)
+    $end            reduce using rule 13 (Term -> NOUN .)
+    RPAR            reduce using rule 13 (Term -> NOUN .)
+    DEDENT          reduce using rule 13 (Term -> NOUN .)
+
+
+state 4
+
+    (12) Term -> VARIABLE .
+
+    VERB            reduce using rule 12 (Term -> VARIABLE .)
+    TERMINATOR      reduce using rule 12 (Term -> VARIABLE .)
+    $end            reduce using rule 12 (Term -> VARIABLE .)
+    RPAR            reduce using rule 12 (Term -> VARIABLE .)
+    DEDENT          reduce using rule 12 (Term -> VARIABLE .)
+
+
+state 5
+
+    (4) Block -> INDENT . Body DEDENT
+    (5) Body -> . Line
+    (6) Body -> . Body TERMINATOR Line
+    (7) Body -> . Body TERMINATOR
+    (8) Line -> . Expression
+    (9) Line -> . Statement
+    (10) Expression -> . Clause
+    (11) Expression -> . Term
+    (18) Statement -> . Class
+    (19) Statement -> . Method
+    (22) Clause -> . Expression VERB Expression
+    (23) Clause -> . Expression VERB
+    (24) Clause -> . VERB Expression
+    (25) Clause -> . VERB
+    (26) Clause -> . Expression
+    (12) Term -> . VARIABLE
+    (13) Term -> . NOUN
+    (14) Term -> . STRING
+    (15) Term -> . SNIPPET
+    (20) Class -> . CLASS Identifier Block
+    (21) Method -> . DEF Identifier ParExpr Block
+
+    VERB            shift and go to state 17
+    VARIABLE        shift and go to state 4
+    NOUN            shift and go to state 3
+    STRING          shift and go to state 15
+    SNIPPET         shift and go to state 11
+    CLASS           shift and go to state 6
+    DEF             shift and go to state 13
+
+    Statement                      shift and go to state 2
+    Clause                         shift and go to state 12
+    Body                           shift and go to state 19
+    Method                         shift and go to state 18
+    Term                           shift and go to state 8
+    Expression                     shift and go to state 10
+    Line                           shift and go to state 9
+    Class                          shift and go to state 14
+
+state 6
+
+    (20) Class -> CLASS . Identifier Block
+    (27) Identifier -> . VERB
+    (28) Identifier -> . NOUN
+
+    VERB            shift and go to state 20
+    NOUN            shift and go to state 22
+
+    Identifier                     shift and go to state 21
+
+state 7
+
+    (2) Root -> Body .
+    (6) Body -> Body . TERMINATOR Line
+    (7) Body -> Body . TERMINATOR
+
+    $end            reduce using rule 2 (Root -> Body .)
+    TERMINATOR      shift and go to state 23
+
+
+state 8
+
+    (11) Expression -> Term .
+
+    RPAR            reduce using rule 11 (Expression -> Term .)
+    VERB            reduce using rule 11 (Expression -> Term .)
+    TERMINATOR      reduce using rule 11 (Expression -> Term .)
+    $end            reduce using rule 11 (Expression -> Term .)
+    DEDENT          reduce using rule 11 (Expression -> Term .)
+
+
+state 9
+
+    (5) Body -> Line .
+
+    DEDENT          reduce using rule 5 (Body -> Line .)
+    TERMINATOR      reduce using rule 5 (Body -> Line .)
+    $end            reduce using rule 5 (Body -> Line .)
+
+
+state 10
+
+    (8) Line -> Expression .
+    (22) Clause -> Expression . VERB Expression
+    (23) Clause -> Expression . VERB
+    (26) Clause -> Expression .
+
+  ! shift/reduce conflict for VERB resolved as shift
+  ! reduce/reduce conflict for TERMINATOR resolved using rule 8 (Line -> Expression .)
+  ! reduce/reduce conflict for $end resolved using rule 8 (Line -> Expression .)
+  ! reduce/reduce conflict for DEDENT resolved using rule 8 (Line -> Expression .)
+    DEDENT          reduce using rule 8 (Line -> Expression .)
+    TERMINATOR      reduce using rule 8 (Line -> Expression .)
+    $end            reduce using rule 8 (Line -> Expression .)
+    VERB            shift and go to state 24
+
+  ! VERB            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! TERMINATOR      [ reduce using rule 26 (Clause -> Expression .) ]
+  ! $end            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! DEDENT          [ reduce using rule 26 (Clause -> Expression .) ]
+
+
+state 11
+
+    (15) Term -> SNIPPET .
+
+    VERB            reduce using rule 15 (Term -> SNIPPET .)
+    TERMINATOR      reduce using rule 15 (Term -> SNIPPET .)
+    $end            reduce using rule 15 (Term -> SNIPPET .)
+    RPAR            reduce using rule 15 (Term -> SNIPPET .)
+    DEDENT          reduce using rule 15 (Term -> SNIPPET .)
+
+
+state 12
+
+    (10) Expression -> Clause .
+
+    RPAR            reduce using rule 10 (Expression -> Clause .)
+    VERB            reduce using rule 10 (Expression -> Clause .)
+    TERMINATOR      reduce using rule 10 (Expression -> Clause .)
+    $end            reduce using rule 10 (Expression -> Clause .)
+    DEDENT          reduce using rule 10 (Expression -> Clause .)
+
+
+state 13
+
+    (21) Method -> DEF . Identifier ParExpr Block
+    (27) Identifier -> . VERB
+    (28) Identifier -> . NOUN
+
+    VERB            shift and go to state 20
+    NOUN            shift and go to state 22
+
+    Identifier                     shift and go to state 25
+
+state 14
+
+    (18) Statement -> Class .
+
+    DEDENT          reduce using rule 18 (Statement -> Class .)
+    TERMINATOR      reduce using rule 18 (Statement -> Class .)
+    $end            reduce using rule 18 (Statement -> Class .)
+
+
+state 15
+
+    (14) Term -> STRING .
+
+    VERB            reduce using rule 14 (Term -> STRING .)
+    TERMINATOR      reduce using rule 14 (Term -> STRING .)
+    $end            reduce using rule 14 (Term -> STRING .)
+    RPAR            reduce using rule 14 (Term -> STRING .)
+    DEDENT          reduce using rule 14 (Term -> STRING .)
+
+
+state 16
+
+    (3) Root -> Block . TERMINATOR
+
+    TERMINATOR      shift and go to state 26
+
+
+state 17
+
+    (24) Clause -> VERB . Expression
+    (25) Clause -> VERB .
+    (10) Expression -> . Clause
+    (11) Expression -> . Term
+    (22) Clause -> . Expression VERB Expression
+    (23) Clause -> . Expression VERB
+    (24) Clause -> . VERB Expression
+    (25) Clause -> . VERB
+    (26) Clause -> . Expression
+    (12) Term -> . VARIABLE
+    (13) Term -> . NOUN
+    (14) Term -> . STRING
+    (15) Term -> . SNIPPET
+
+  ! shift/reduce conflict for VERB resolved as shift
+    TERMINATOR      reduce using rule 25 (Clause -> VERB .)
+    $end            reduce using rule 25 (Clause -> VERB .)
+    DEDENT          reduce using rule 25 (Clause -> VERB .)
+    RPAR            reduce using rule 25 (Clause -> VERB .)
+    VERB            shift and go to state 17
+    VARIABLE        shift and go to state 4
+    NOUN            shift and go to state 3
+    STRING          shift and go to state 15
+    SNIPPET         shift and go to state 11
+
+  ! VERB            [ reduce using rule 25 (Clause -> VERB .) ]
+
+    Clause                         shift and go to state 12
+    Term                           shift and go to state 8
+    Expression                     shift and go to state 27
+
+state 18
+
+    (19) Statement -> Method .
+
+    DEDENT          reduce using rule 19 (Statement -> Method .)
+    TERMINATOR      reduce using rule 19 (Statement -> Method .)
+    $end            reduce using rule 19 (Statement -> Method .)
+
+
+state 19
+
+    (4) Block -> INDENT Body . DEDENT
+    (6) Body -> Body . TERMINATOR Line
+    (7) Body -> Body . TERMINATOR
+
+    DEDENT          shift and go to state 28
+    TERMINATOR      shift and go to state 23
+
+
+state 20
+
+    (27) Identifier -> VERB .
+
+    LPAR            reduce using rule 27 (Identifier -> VERB .)
+    INDENT          reduce using rule 27 (Identifier -> VERB .)
+
+
+state 21
+
+    (20) Class -> CLASS Identifier . Block
+    (4) Block -> . INDENT Body DEDENT
+
+    INDENT          shift and go to state 5
+
+    Block                          shift and go to state 29
+
+state 22
+
+    (28) Identifier -> NOUN .
+
+    LPAR            reduce using rule 28 (Identifier -> NOUN .)
+    INDENT          reduce using rule 28 (Identifier -> NOUN .)
+
+
+state 23
+
+    (6) Body -> Body TERMINATOR . Line
+    (7) Body -> Body TERMINATOR .
+    (8) Line -> . Expression
+    (9) Line -> . Statement
+    (10) Expression -> . Clause
+    (11) Expression -> . Term
+    (18) Statement -> . Class
+    (19) Statement -> . Method
+    (22) Clause -> . Expression VERB Expression
+    (23) Clause -> . Expression VERB
+    (24) Clause -> . VERB Expression
+    (25) Clause -> . VERB
+    (26) Clause -> . Expression
+    (12) Term -> . VARIABLE
+    (13) Term -> . NOUN
+    (14) Term -> . STRING
+    (15) Term -> . SNIPPET
+    (20) Class -> . CLASS Identifier Block
+    (21) Method -> . DEF Identifier ParExpr Block
+
+    DEDENT          reduce using rule 7 (Body -> Body TERMINATOR .)
+    TERMINATOR      reduce using rule 7 (Body -> Body TERMINATOR .)
+    $end            reduce using rule 7 (Body -> Body TERMINATOR .)
+    VERB            shift and go to state 17
+    VARIABLE        shift and go to state 4
+    NOUN            shift and go to state 3
+    STRING          shift and go to state 15
+    SNIPPET         shift and go to state 11
+    CLASS           shift and go to state 6
+    DEF             shift and go to state 13
+
+    Statement                      shift and go to state 2
+    Clause                         shift and go to state 12
+    Method                         shift and go to state 18
+    Term                           shift and go to state 8
+    Expression                     shift and go to state 10
+    Line                           shift and go to state 30
+    Class                          shift and go to state 14
+
+state 24
+
+    (22) Clause -> Expression VERB . Expression
+    (23) Clause -> Expression VERB .
+    (10) Expression -> . Clause
+    (11) Expression -> . Term
+    (22) Clause -> . Expression VERB Expression
+    (23) Clause -> . Expression VERB
+    (24) Clause -> . VERB Expression
+    (25) Clause -> . VERB
+    (26) Clause -> . Expression
+    (12) Term -> . VARIABLE
+    (13) Term -> . NOUN
+    (14) Term -> . STRING
+    (15) Term -> . SNIPPET
+
+  ! shift/reduce conflict for VERB resolved as shift
+    TERMINATOR      reduce using rule 23 (Clause -> Expression VERB .)
+    $end            reduce using rule 23 (Clause -> Expression VERB .)
+    DEDENT          reduce using rule 23 (Clause -> Expression VERB .)
+    RPAR            reduce using rule 23 (Clause -> Expression VERB .)
+    VERB            shift and go to state 17
+    VARIABLE        shift and go to state 4
+    NOUN            shift and go to state 3
+    STRING          shift and go to state 15
+    SNIPPET         shift and go to state 11
+
+  ! VERB            [ reduce using rule 23 (Clause -> Expression VERB .) ]
+
+    Clause                         shift and go to state 12
+    Term                           shift and go to state 8
+    Expression                     shift and go to state 31
+
+state 25
+
+    (21) Method -> DEF Identifier . ParExpr Block
+    (16) ParExpr -> . LPAR Expression RPAR
+    (17) ParExpr -> . LPAR RPAR
+
+    LPAR            shift and go to state 33
+
+    ParExpr                        shift and go to state 32
+
+state 26
+
+    (3) Root -> Block TERMINATOR .
+
+    $end            reduce using rule 3 (Root -> Block TERMINATOR .)
+
+
+state 27
+
+    (24) Clause -> VERB Expression .
+    (22) Clause -> Expression . VERB Expression
+    (23) Clause -> Expression . VERB
+    (26) Clause -> Expression .
+
+  ! shift/reduce conflict for VERB resolved as shift
+  ! shift/reduce conflict for VERB resolved as shift
+  ! reduce/reduce conflict for TERMINATOR resolved using rule 24 (Clause -> VERB Expression .)
+  ! reduce/reduce conflict for $end resolved using rule 24 (Clause -> VERB Expression .)
+  ! reduce/reduce conflict for DEDENT resolved using rule 24 (Clause -> VERB Expression .)
+  ! reduce/reduce conflict for RPAR resolved using rule 24 (Clause -> VERB Expression .)
+    TERMINATOR      reduce using rule 24 (Clause -> VERB Expression .)
+    $end            reduce using rule 24 (Clause -> VERB Expression .)
+    DEDENT          reduce using rule 24 (Clause -> VERB Expression .)
+    RPAR            reduce using rule 24 (Clause -> VERB Expression .)
+    VERB            shift and go to state 24
+
+  ! VERB            [ reduce using rule 24 (Clause -> VERB Expression .) ]
+  ! VERB            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! TERMINATOR      [ reduce using rule 26 (Clause -> Expression .) ]
+  ! $end            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! DEDENT          [ reduce using rule 26 (Clause -> Expression .) ]
+  ! RPAR            [ reduce using rule 26 (Clause -> Expression .) ]
+
+
+state 28
+
+    (4) Block -> INDENT Body DEDENT .
+
+    TERMINATOR      reduce using rule 4 (Block -> INDENT Body DEDENT .)
+    $end            reduce using rule 4 (Block -> INDENT Body DEDENT .)
+    DEDENT          reduce using rule 4 (Block -> INDENT Body DEDENT .)
+
+
+state 29
+
+    (20) Class -> CLASS Identifier Block .
+
+    TERMINATOR      reduce using rule 20 (Class -> CLASS Identifier Block .)
+    $end            reduce using rule 20 (Class -> CLASS Identifier Block .)
+    DEDENT          reduce using rule 20 (Class -> CLASS Identifier Block .)
+
+
+state 30
+
+    (6) Body -> Body TERMINATOR Line .
+
+    DEDENT          reduce using rule 6 (Body -> Body TERMINATOR Line .)
+    TERMINATOR      reduce using rule 6 (Body -> Body TERMINATOR Line .)
+    $end            reduce using rule 6 (Body -> Body TERMINATOR Line .)
+
+
+state 31
+
+    (22) Clause -> Expression VERB Expression .
+    (22) Clause -> Expression . VERB Expression
+    (23) Clause -> Expression . VERB
+    (26) Clause -> Expression .
+
+  ! shift/reduce conflict for VERB resolved as shift
+  ! shift/reduce conflict for VERB resolved as shift
+  ! reduce/reduce conflict for TERMINATOR resolved using rule 22 (Clause -> Expression VERB Expression .)
+  ! reduce/reduce conflict for $end resolved using rule 22 (Clause -> Expression VERB Expression .)
+  ! reduce/reduce conflict for DEDENT resolved using rule 22 (Clause -> Expression VERB Expression .)
+  ! reduce/reduce conflict for RPAR resolved using rule 22 (Clause -> Expression VERB Expression .)
+    TERMINATOR      reduce using rule 22 (Clause -> Expression VERB Expression .)
+    $end            reduce using rule 22 (Clause -> Expression VERB Expression .)
+    DEDENT          reduce using rule 22 (Clause -> Expression VERB Expression .)
+    RPAR            reduce using rule 22 (Clause -> Expression VERB Expression .)
+    VERB            shift and go to state 24
+
+  ! VERB            [ reduce using rule 22 (Clause -> Expression VERB Expression .) ]
+  ! VERB            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! TERMINATOR      [ reduce using rule 26 (Clause -> Expression .) ]
+  ! $end            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! DEDENT          [ reduce using rule 26 (Clause -> Expression .) ]
+  ! RPAR            [ reduce using rule 26 (Clause -> Expression .) ]
+
+
+state 32
+
+    (21) Method -> DEF Identifier ParExpr . Block
+    (4) Block -> . INDENT Body DEDENT
+
+    INDENT          shift and go to state 5
+
+    Block                          shift and go to state 34
+
+state 33
+
+    (16) ParExpr -> LPAR . Expression RPAR
+    (17) ParExpr -> LPAR . RPAR
+    (10) Expression -> . Clause
+    (11) Expression -> . Term
+    (22) Clause -> . Expression VERB Expression
+    (23) Clause -> . Expression VERB
+    (24) Clause -> . VERB Expression
+    (25) Clause -> . VERB
+    (26) Clause -> . Expression
+    (12) Term -> . VARIABLE
+    (13) Term -> . NOUN
+    (14) Term -> . STRING
+    (15) Term -> . SNIPPET
+
+    RPAR            shift and go to state 35
+    VERB            shift and go to state 17
+    VARIABLE        shift and go to state 4
+    NOUN            shift and go to state 3
+    STRING          shift and go to state 15
+    SNIPPET         shift and go to state 11
+
+    Clause                         shift and go to state 12
+    Term                           shift and go to state 8
+    Expression                     shift and go to state 36
+
+state 34
+
+    (21) Method -> DEF Identifier ParExpr Block .
+
+    TERMINATOR      reduce using rule 21 (Method -> DEF Identifier ParExpr Block .)
+    $end            reduce using rule 21 (Method -> DEF Identifier ParExpr Block .)
+    DEDENT          reduce using rule 21 (Method -> DEF Identifier ParExpr Block .)
+
+
+state 35
+
+    (17) ParExpr -> LPAR RPAR .
+
+    INDENT          reduce using rule 17 (ParExpr -> LPAR RPAR .)
+
+
+state 36
+
+    (16) ParExpr -> LPAR Expression . RPAR
+    (22) Clause -> Expression . VERB Expression
+    (23) Clause -> Expression . VERB
+    (26) Clause -> Expression .
+
+  ! shift/reduce conflict for RPAR resolved as shift
+  ! shift/reduce conflict for VERB resolved as shift
+    RPAR            shift and go to state 37
+    VERB            shift and go to state 24
+
+  ! RPAR            [ reduce using rule 26 (Clause -> Expression .) ]
+  ! VERB            [ reduce using rule 26 (Clause -> Expression .) ]
+
+
+state 37
+
+    (16) ParExpr -> LPAR Expression RPAR .
+
+    INDENT          reduce using rule 16 (ParExpr -> LPAR Expression RPAR .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for VERB in state 10 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 17 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 24 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 27 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 27 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 31 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 31 resolved as shift
+WARNING: shift/reduce conflict for RPAR in state 36 resolved as shift
+WARNING: shift/reduce conflict for VERB in state 36 resolved as shift
+WARNING: reduce/reduce conflict in state 10 resolved using rule (Line -> Expression)
+WARNING: rejected rule (Clause -> Expression) in state 10
+WARNING: reduce/reduce conflict in state 27 resolved using rule (Clause -> VERB Expression)
+WARNING: rejected rule (Clause -> Expression) in state 27
+WARNING: reduce/reduce conflict in state 31 resolved using rule (Clause -> Expression VERB Expression)
+WARNING: rejected rule (Clause -> Expression) in state 31
+WARNING: Rule (Clause -> Expression) is never reduced

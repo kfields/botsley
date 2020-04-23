@@ -1,0 +1,35 @@
+namespace BwBrainTest
+
+    brain RuleTestBrain
+
+        method RuleTestBrain(ruleTestBrain)
+            context RuleTestContext
+                Bob
+                    knows Joe
+                    knows Jack
+                    knows John
+                Joe
+                    likes RockMusic
+                    plays Guitar
+                Jack
+                    likes ClassicalMusic
+                    plays Piano     
+                John
+                    likes RockMusic
+                    plays Guitar
+                    
+            ruleTest :context RuleTestContext
+
+
+        expert RuleTest
+            method RuleTest(ruleTest)
+                        
+            method Foo(+ $y plays Guitar)
+                where
+                    $y likes RockMusic
+                    Bob knows $y
+                    -->
+                    + Bob likes $y
+                    
+            method BobLikes(+ Bob likes $x)
+                {Console.WriteLine("Bob likes " + x.ToString());}
