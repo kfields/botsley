@@ -1,0 +1,10 @@
+Table1:
+  type: Table
+
+Block1:
+  type: Block
+  on: Table1
+
+Block2:
+  type: Block
+  on: Block1

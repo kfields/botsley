@@ -72,11 +72,11 @@ def term_(arg, T=None):
             elif type(T) is str:
                 T = eval(f"{type} = class {type} Term:")
             terms[arg] = term = T(arg)
-    elif type(arg) is object:
+    elif type(arg) is list:
         term = {}
         for e in arg:
             n = "_" + e
-            obj[n] = term_(e)
+            term[n] = term_(e)
     return term
 
 
@@ -90,12 +90,12 @@ _impasse = term_("impasse")
 
 
 class Clause:
-    def __init__(self, subj, verb, obj, **kwargs):
+    def __init__(self, subj, verb, obj, **xtra):
         self.subj = subj
         self.verb = verb
         self.obj = obj
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
+        for key in xtra:
+            setattr(self, key, xtra[key])
 
         #self.xtra = kwargs
 
@@ -124,18 +124,22 @@ class Clause:
             OBJ: self.obj and JSON.stringify(self.obj),
         }
 
-    def match(self, T, s, v, o, x):
+    def match(self, T, s, v, o, **x):
         return isinstance(self, T) and match(
             s, self.subj, match(v, self.verb, match(o, self.obj))
         )
 
-    def isEqual(self, clause):
+    def __eq__(self, other): 
         return (
             self.__class__.__name__ == clause.__class__.__name__
             and self.subj == clause.subj
             and self.verb == clause.verb
             and self.obj == clause.obj
         )
+
+    def __hash__(self):
+        # necessary for instances to behave sanely in dicts and sets.
+        return hash((self.subj, self.verb, self.obj))
 
 
 clause_ = lambda T, s, v, o, x: T(s, v, o, x)
@@ -144,7 +148,7 @@ class Believe(Clause):
     pass
 
 
-believe_ = lambda s, v, o, x=None: Believe(s, v, o, x)
+believe_ = lambda s, v, o, **x: Believe(s, v, o, **x)
 #
 class Goal(Clause):
     pass
@@ -177,29 +181,29 @@ class Message:
             FROM: self.sender and self.sender.toJSON(),
         }
 
-    def match(self, F, T, s, v, o, x=None):
-        return isinstance(self, F) and self.data.match(T, s, v, o, x)
+    def match(self, F, T, s, v, o, **x):
+        return isinstance(self, F) and self.data.match(T, s, v, o, **x)
 
 
 class Propose(Message):
     pass
 
 
-propose_ = lambda T, s, v, o=None, x=None: Propose(T(s, v, o, x))
+propose_ = lambda T, s, v, o=None, **x: Propose(T(s, v, o, **x))
 
 
 class Attempt(Message):
     pass
 
 
-attempt_ = lambda T, s, v, o=None, x=None: Attempt(T(s, v, o, x))
+attempt_ = lambda T, s, v, o=None, **x: Attempt(T(s, v, o, **x))
 
 
 class Assert(Message):
     pass
 
 
-assert_ = lambda T, s, v, o=None, x=None: Assert(T(s, v, o, x))
+assert_ = lambda T, s, v, o=None, **x: Assert(T(s, v, o, **x))
 
 
 class Retract(Message):
@@ -211,7 +215,7 @@ retract_ = lambda T, s, v, o=None, x=None: Retract(T(s, v, o, x))
 # Trigger
 #
 class Trigger:
-    def __init__(self, flavor, T, subj, verb, obj, xtra=None):
+    def __init__(self, flavor, T, subj, verb, obj, **xtra):
         self.flavor = flavor  # message type
         self.type = T  # clause type
         self.subj = subj
@@ -221,28 +225,28 @@ class Trigger:
 
     def match(self, m):
         return m.match(
-            self.flavor, self.type, self.subj, self.verb, self.obj, self.xtra
+            self.flavor, self.type, self.subj, self.verb, self.obj, **self.xtra
         )
 
 
 #
 class OnAssert(Trigger):
-    def __init__(self, T, s, v, o=None, x=None):
-        super().__init__(Assert, T, s, v, o, x)
+    def __init__(self, T, s, v, o=None, **x):
+        super().__init__(Assert, T, s, v, o, **x)
 
 
-onAssert_ = lambda T, s, v, o=None, x=None: OnAssert(T, s, v, o, x)
+onAssert_ = lambda T, s, v, o=None, **x: OnAssert(T, s, v, o, **x)
 #
 class OnRetract(Trigger):
     pass
 
 
-onRetract_ = lambda T, s, v, o=None, x=None: OnRetract(T, s, v, o, x)
+onRetract_ = lambda T, s, v, o=None, **x: OnRetract(T, s, v, o, **x)
 
 
 class OnAttempt(Trigger):
-    def __init__(self, T, s, v, o=None, x=None):
-        super().__init__(Attempt, T, s, v, o, x)
+    def __init__(self, T, s, v, o=None, **x):
+        super().__init__(Attempt, T, s, v, o, **x)
 
 
-onAttempt_ = lambda T, s, v, o=None, x=None: OnAttempt(T, s, v, o, x)
+onAttempt_ = lambda T, s, v, o=None, **x: OnAttempt(T, s, v, o, **x)

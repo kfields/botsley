@@ -1,8 +1,8 @@
 import asyncio
 from copy import copy
 from uuid import uuid1
+from loguru import logger
 
-from botsley.app import logger
 from botsley.run import *
 from botsley.run import _impasse
 from botsley.run.behavior import *

@@ -1,7 +1,6 @@
 from botsley.run import term_, Believe, clause_
 
-# {Query} = require('./query');
-
+from .query import Query
 
 class Context:
     def __init__(self, clauses=[]):
@@ -39,35 +38,33 @@ class Context:
 
     def remove(self, clause):
         self.clauses = self.clauses.filter(
-            lambda value, index, arr: notvalue.isEqual(clause)
+            lambda value, index, arr: value != clause
         )
         return self
 
-    def believe(self, s, v, o, x):
-        self.add(Believe(s, v, o, x))
+    def believe(self, s, v, o, **x):
+        self.add(Believe(s, v, o, **x))
         return self
 
-    def exists(self, t, s, v, o, x):
+    def exists(self, t, s, v, o, **x):
         for c in self.clauses:
-            if c.match(t, s, v, o, x):
+            if c.match(t, s, v, o, **x):
                 return True
         return False
 
-    def find(self, t, s, v, o, x):
+    def find(self, t, s, v, o, **x):
         result = []
-        for c in self.match(t, s, v, o, x):
-            result.push(c)
+        for c in self.match(t, s, v, o, **x):
+            result.append(c)
         return result
 
-    def match(self, t, s, v, o, x):
+    def match(self, t, s, v, o, **x):
         for c in self.clauses:
-            if c.match(t, s, v, o, x):
+            if c.match(t, s, v, o, **x):
                 yield c
 
-    """
-    def query(self, t, s, v, o, x):
-        return Query(self).and(t, s, v, o, x)
-    """
+    def query(self, t, s, v, o, **x):
+        return Query(self)._and(t, s, v, o, **x)
 
     def __repr__(self):
         result = ""
@@ -75,10 +72,11 @@ class Context:
             result += str(c) + "\n"
         return result
 
-    def fromJSON(self, json):
-        for k in json:
-            v = json[k]
-            t = v.type
+    def fromJSON(self, data):
+        for k in data:
+            v = data[k]
+            print('v', v)
+            t = v.get('type')
             subj = term_(k, t)
             for vk in v:
                 vv = v[vk]
@@ -90,4 +88,4 @@ class Context:
                     self.believe(subj, verb, term_(vv))
 
 
-context_ = lambda cfg: Context().config(cfg)
+context_ = lambda cfg=None: Context().config(cfg)

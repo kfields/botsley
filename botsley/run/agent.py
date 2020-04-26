@@ -1,4 +1,3 @@
-from botsley.app import logger
 from botsley.run import *
 from botsley.run.bot import Bot
 

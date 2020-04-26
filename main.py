@@ -8,7 +8,7 @@ import pprint
 import json
 import itertools
 
-from botsley.data import load
+import botsley.assets as assets
 from botsley.compile.lex.lexer import Lexer
 from botsley.compile.parse.parser import Parser
 from botsley.compile.ast.node import AstEncoder
@@ -17,7 +17,7 @@ from botsley.compile.compiler import Compiler
     
 def main():
     filename = 'turtles.mia'
-    with load(filename) as fh:
+    with assets.load(filename) as fh:
         s = fh.read()
 
     print('##start##')
