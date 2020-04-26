@@ -12,4 +12,4 @@ class YamlContext(Context):
         self.fromJSON(data)
         return self
 
-yamlcontext_ = lambda cfg: YamlContext().config(cfg)
+yamlcontext_ = lambda cfg=None: YamlContext().config(cfg)

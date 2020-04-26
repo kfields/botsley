@@ -90,12 +90,13 @@ _impasse = term_("impasse")
 
 
 class Clause:
-    def __init__(self, subj, verb, obj, **xtra):
+    def __init__(self, subj, verb, obj=None, xtra=None):
         self.subj = subj
         self.verb = verb
         self.obj = obj
-        for key in xtra:
-            setattr(self, key, xtra[key])
+        if xtra:
+            for key in xtra:
+                setattr(self, key, xtra[key])
 
         #self.xtra = kwargs
 
@@ -124,7 +125,7 @@ class Clause:
             OBJ: self.obj and JSON.stringify(self.obj),
         }
 
-    def match(self, T, s, v, o, **x):
+    def match(self, T, s, v, o=None, x=None):
         return isinstance(self, T) and match(
             s, self.subj, match(v, self.verb, match(o, self.obj))
         )
@@ -142,13 +143,13 @@ class Clause:
         return hash((self.subj, self.verb, self.obj))
 
 
-clause_ = lambda T, s, v, o, x: T(s, v, o, x)
+clause_ = lambda T, s, v, o=None, **x: T(s, v, o, x)
 #
 class Believe(Clause):
     pass
 
 
-believe_ = lambda s, v, o, **x: Believe(s, v, o, **x)
+believe_ = lambda s, v, o=None, **x: Believe(s, v, o, x)
 #
 class Goal(Clause):
     pass

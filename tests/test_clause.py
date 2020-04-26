@@ -10,11 +10,11 @@ _Chips = term_("Chips")
 
 class Test(unittest.TestCase):
     def test_simple(self):
-        c = Clause(_Bob, _likes, _Fish)
+        c = believe_(_Bob, _likes, _Fish)
         print(c)
 
     def test_xtra(self):
-        c = Clause(_Bob, _likes, _Fish, _and=_Chips)
+        c = believe_(_Bob, _likes, _Fish, _and=_Chips)
         print(c)
 
 if __name__ == '__main__':

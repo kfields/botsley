@@ -1,3 +1,5 @@
+from botsley.run import *
+
 class Query:
     def __init__(self, ctx):
         self.ctx = ctx
@@ -13,16 +15,14 @@ class Query:
         c.ctx = self.ctx
         return self.conds.append(c)
 
-    def _and(self, t, s, v, o, x):
+    def _and(self, t, s, v, o=None, x=None):
         cond = QClause(t, s, v, o, x)
-        src = self.conds[-1]
-        if src:
-            cond.src = src
-
+        src = self.conds[-1] if len(self.conds) > 0 else None
+        cond.src = src
         self.add(cond)
         return self
 
-    def _not(self, t, s, v, o, x):
+    def _not(self, t, s, v, o=None, x=None):
         cond = QNegClause(t, s, v, o, x)
         src = self.conds[-1]
         if src:
@@ -58,7 +58,7 @@ class Condition:
 
     def binding(self, b, v):
         if v:
-            return b[v.name]
+            return b.get(v.name)
         return None
 
 class QFilter(Condition):
@@ -77,13 +77,14 @@ class QFilter(Condition):
                 yield binder
 
 class QClause(Condition):
-    def __init__(self, t, s, v, o, x):
+    def __init__(self, t, s, v, o=None, x=None):
         super().__init__()
         self.t = t
         self.s = s
         self.v = v
         self.o = o
         self.x = x
+        self.src = None
 
     def binders(self):
         source = None
@@ -98,14 +99,26 @@ class QClause(Condition):
             if isinstance(s, Variable):
                 if isinstance(o, Variable):
                     for c in self.ctx.match(self.t, s, self.v, o, self.x):
-                        yield Object.assign({[s.name]: c.subj, [o.name]: c.obj}, binder)
+                        #yield {s.name: c.subj, o.name: c.obj}.update(binder)
+                        result = {s.name: c.subj, o.name: c.obj}
+                        result.update(binder)
+                        yield result
+
                 else:
                     for c in self.ctx.match(self.t, s, self.v, o, self.x):
-                        yield Object.assign({[s.name]: c.subj}, binder)
+                        #yield {s.name: c.subj}.update(binder)
+                        result = {s.name: c.subj}
+                        result.update(binder)
+                        yield result
+
             else:
                 if isinstance(o, Variable):
                     for c in self.ctx.match(self.t, s, self.v, o, self.x):
-                        yield Object.assign({[o.name]: c.obj}, binder)
+                        #yield {o.name: c.obj}.update(binder)
+                        result = {o.name: c.obj}
+                        result.update(binder)
+                        yield result
+
                 else:
                     for c in self.ctx.match(self.t, s, self.v, o, self.x):
                         yield binder

@@ -42,29 +42,29 @@ class Context:
         )
         return self
 
-    def believe(self, s, v, o, **x):
-        self.add(Believe(s, v, o, **x))
+    def believe(self, s, v, o=None, x=None):
+        self.add(Believe(s, v, o, x))
         return self
 
-    def exists(self, t, s, v, o, **x):
+    def exists(self, t, s, v, o=None, x=None):
         for c in self.clauses:
-            if c.match(t, s, v, o, **x):
+            if c.match(t, s, v, o, x):
                 return True
         return False
 
-    def find(self, t, s, v, o, **x):
+    def find(self, t, s, v, o=None, x=None):
         result = []
-        for c in self.match(t, s, v, o, **x):
+        for c in self.match(t, s, v, o, x):
             result.append(c)
         return result
 
-    def match(self, t, s, v, o, **x):
+    def match(self, t, s, v, o, x):
         for c in self.clauses:
-            if c.match(t, s, v, o, **x):
+            if c.match(t, s, v, o, x):
                 yield c
 
-    def query(self, t, s, v, o, **x):
-        return Query(self)._and(t, s, v, o, **x)
+    def query(self, t, s, v, o=None, x=None):
+        return Query(self)._and(t, s, v, o, x)
 
     def __repr__(self):
         result = ""
