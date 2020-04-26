@@ -1,5 +1,27 @@
 from botsley.run.task import *
 
+#
+# Context Management
+#
+PARENT = "parent"
+
+ctx_parent = contextvars.ContextVar("ctx_parent", default=None)
+
+
+def ctx_enter(child):
+    parent = ctx_parent.get()
+    if parent:
+        child.parent = parent
+        child.bot = parent.bot
+        parent.add(child)
+
+    ctx_parent.set(child)
+    return {PARENT: parent}
+
+
+def ctx_exit(ctx):
+    ctx_parent.set(ctx[PARENT])
+
 class Behavior(Task):
     def __init__(self, action=None, msg=None):
         super().__init__(action, msg)
@@ -32,11 +54,6 @@ class Behavior(Task):
             return self.policy.match(m)
         return []
 
-    def perform(self, s, p, o, x):
-        c = Achieve(s, p, o, x)
-        m = Attempt(c, self)
-        return self.post(m)
-
     def propose(self, c):
         return self.post(Propose(c, self))
 
@@ -49,19 +66,52 @@ class Behavior(Task):
     def retract(self, c):
         return self.post(Retract(c, self))
 
+    def perform(self, s, p, o, x):
+        c = Achieve(s, p, o, x)
+        m = Attempt(c, self)
+        return self.post(m)
+
+    def call(self, s, p, o, x):
+        c = Achieve(s, p, o, x)
+        m = Attempt(c, self)
+        m.caller = self
+        self.post(m)
+        return self.suspend()
+
+
+#
+# Sensor
+#
+class Sensor(Behavior):
+    pass
+
+
+@contextmanager
+def sensor():
+    task = Sensor()
+    ctx = ctx_enter(task)
+    yield task
+    ctx_exit(ctx)
+
+
+sensor_ = lambda: Sensor()
 
 #
 # Condition
 #
 class Condition(Behavior):
-    pass
-
+    async def main(self, msg=None):
+        for child in self.children:
+            result = await child
+            if result == TS_FAILURE:
+                return self.fail()
 
 @contextmanager
-def condition(parent=None):
-    child = Condition()
-    ctx = ctx_enter(parent, child)
-    yield child
+def condition(task=None):
+    if not task:
+        task = Condition()
+    ctx = ctx_enter(task)
+    yield task
     ctx_exit(ctx)
 
 
@@ -75,10 +125,11 @@ class Action(Behavior):
 
 
 @contextmanager
-def action(parent=None):
-    child = Action()
-    ctx = ctx_enter(parent, child)
-    yield child
+def action(task=None):
+    if not task:
+        task = Action()
+    ctx = ctx_enter(task)
+    yield task
     ctx_exit(ctx)
 
 
@@ -100,12 +151,34 @@ class Sequence(Behavior):
 
 
 @contextmanager
-def sequence(parent=None):
-    child = Sequence()
-    ctx = ctx_enter(parent, child)
-    yield child
+def sequence():
+    task = Sequence()
+    ctx = ctx_enter(task)
+    yield task
     ctx_exit(ctx)
 
+
+#
+# Selector
+#
+class Selector(Behavior):
+    def __init__(self):
+        super().__init__()
+
+    async def main(self, msg=None):
+        for child in self.children:
+            result = await child
+            '''
+            if result == TS_FAILURE:
+                return self.fail()
+            '''
+
+@contextmanager
+def selector():
+    task = Selector()
+    ctx = ctx_enter(task)
+    yield task
+    ctx_exit(ctx)
 
 #
 # Loop
@@ -124,10 +197,10 @@ class Timer(Behavior):
 
 
 @contextmanager
-def timer(timeout, parent=None):
-    child = Timer(timeout)
-    ctx = ctx_enter(parent, child)
-    yield child
+def timer(timeout):
+    task = Timer(timeout)
+    ctx = ctx_enter(task)
+    yield task
     ctx_exit(ctx)
 
 
@@ -148,10 +221,10 @@ class Loop(Behavior):
 
 
 @contextmanager
-def loop(parent=None):
-    child = Loop()
-    ctx = ctx_enter(parent, child)
-    yield child
+def loop():
+    task = Loop()
+    ctx = ctx_enter(task)
+    yield task
     ctx_exit(ctx)
 
 
@@ -176,10 +249,10 @@ class Counter(Behavior):
 
 
 @contextmanager
-def counter(start, stop, parent=None):
-    child = Counter(start, stop)
-    ctx = ctx_enter(parent, child)
-    yield child
+def counter(start, stop):
+    task = Counter(start, stop)
+    ctx = ctx_enter(task)
+    yield task
     ctx_exit(ctx)
 
 
@@ -197,10 +270,25 @@ class Parallel(Behavior):
 
 
 @contextmanager
-def parallel(parent=None):
-    child = Parallel()
-    ctx = ctx_enter(parent, child)
-    yield child
+def parallel():
+    task = Parallel()
+    ctx = ctx_enter(task)
+    yield task
+    ctx_exit(ctx)
+
+#
+# Root
+#
+class Root(Parallel):
+    pass
+
+@contextmanager
+def root(bot=None):
+    task = Root()
+    task.bot = bot
+    ctx = ctx_enter(task)
+    yield task
+    bot.tree = task
     ctx_exit(ctx)
 
 

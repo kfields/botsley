@@ -1,4 +1,3 @@
-# from botsley.run import term_, _$, Believe, clause_
 from botsley.run import term_, Believe, clause_
 
 # {Query} = require('./query');
@@ -92,20 +91,3 @@ class Context:
 
 
 context_ = lambda cfg: Context().config(cfg)
-
-"""
-class Context:
-    def __init__(self):
-        self.subscribers = []
-
-    def subscribe(self, subscriber):
-        self.subscribers.append(subscriber)
-
-    async def send(self, msg):
-        asyncio.create_task(self.publish(msg))
-
-    async def publish(self, msg):
-        for subscriber in self.subscribers:
-            await subscriber.send(msg)
-"""
-

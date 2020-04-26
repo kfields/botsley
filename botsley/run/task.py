@@ -10,30 +10,9 @@ TS_INITIAL = "Initial"
 TS_RUNNING = "Running"
 TS_SUCCESS = "Success"
 TS_FAILURE = "Failure"
+TS_CANCELLED = "Cancelled"
 TS_SUSPENDED = "Suspended"
 TS_HALTED = "Halted"
-
-#
-# Context Management
-#
-PARENT = "parent"
-
-ctx_parent = contextvars.ContextVar("ctx_parent", default=None)
-
-
-def ctx_enter(parent, child):
-    if not parent:
-        parent = ctx_parent.get()
-    if parent:
-        child.parent = parent
-        parent.add(child)
-
-    ctx_parent.set(child)
-    return {PARENT: parent}
-
-
-def ctx_exit(ctx):
-    ctx_parent.set(ctx[PARENT])
 
 
 class method:
@@ -72,6 +51,11 @@ class Task:
     async def main(self, msg=None):
         pass
 
+    async def sleep(self, period=None):
+        print('sleep', period)
+        #self.status = TS_SUSPENDED
+        return await self
+
     def use(self, fn):
         if not inspect.iscoroutinefunction(fn):
             raise Exception("Not a coroutine function!", fn)
@@ -105,8 +89,8 @@ class Task:
         elif status == TS_SUCCESS:
             return status
 
-    def schedule(self, task):
-        runner.schedule(task)
+    def schedule(self, task, msg=None):
+        runner.schedule(task, msg)
 
     def run(self):
         runner.run(self)
@@ -130,6 +114,12 @@ class Task:
             return self.parent.strategy(self)
         else:
             return self.status
+
+    def cancel(self):
+        print("cancel")
+        self.status = TS_CANCELLED
+        for child in self.children:
+            child.cancel()
 
     def halt(self):
         if self.bot:
@@ -157,19 +147,6 @@ class Task:
 
         return runner.schedule(task)
 
-    """
-    def call(self, s, p, o, x):
-        c = Achieve(s, p, o, x)
-        m = Attempt(c, self)
-        m.caller = self
-        self.post(m)
-        return self.suspend()
-    """
-
-    async def call(self, task):
-        await runner.schedule(task)
-        return self.suspend()
-
     #
     # Utility
     #
@@ -187,6 +164,7 @@ class Task:
         self.add(b)
         return self
 
+
 #
 # Runner
 #
@@ -196,6 +174,7 @@ class Runner:
         self.callbacks = []
 
     def schedule(self, obj, msg=None):
+        print("schedule msg", msg)
         task = None
         if inspect.iscoroutinefunction(obj):
             task = Task(obj, msg)
@@ -211,16 +190,20 @@ class Runner:
         self.queue.append(task)
 
     def step(self):
+        print('runner.step')
         queue = self.queue
         self.queue = []
         for task in queue:
             print("task", task)
             print("task.status", task.status)
             try:
-                print('task.coro', task.coro)
+                print("task.coro", task.coro)
                 awaited = task.coro.send(task.awaited.result if task.awaited else None)
                 print("awaited", awaited)
-                if awaited:
+                if awaited is task:
+                    print('sleeping task')
+                    self.reschedule(task)
+                elif awaited:
                     task.status = TS_SUSPENDED
                     task.awaited = awaited
                     awaited.awaiter = task
@@ -242,6 +225,7 @@ class Runner:
             callback()
 
     def run(self, task):
+        print('runner.run')
         self.schedule(task)
         while len(self.queue) != 0:
             self.step()

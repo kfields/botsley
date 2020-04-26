@@ -16,6 +16,7 @@ class MyAgent(Agent):
         super().__init__()
         #print(self.__class__.rules)
         self.post(attempt_(Achieve, _I, _jump))
+        self.post(attempt_(Achieve, _I, _say, 'Howdy Folks!'))
 
     @_(OnAttempt(Achieve, _I, _jump))
     async def howhigh(self, msg):
@@ -24,12 +25,7 @@ class MyAgent(Agent):
 
     @_(OnAttempt(Achieve, _I, _say, _x_))
     async def howdy(self, msg):
-        print('Howdy Folks!')
-        print(msg)
-
-    @_(OnAttempt(Achieve, _I, _say, _x_))
-    async def howfar(self, msg):
-        print('How Far?')
+        print(msg.data.obj)
         print(msg)
 
 class Test(unittest.TestCase):

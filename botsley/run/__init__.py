@@ -72,7 +72,7 @@ def term_(arg, T=None):
             elif type(T) is str:
                 T = eval(f"{type} = class {type} Term:")
             terms[arg] = term = T(arg)
-    elif type(arg, object):
+    elif type(arg) is object:
         term = {}
         for e in arg:
             n = "_" + e
@@ -90,20 +90,21 @@ _impasse = term_("impasse")
 
 
 class Clause:
-    def __init__(self, subj, verb, obj, xtra=None):
+    def __init__(self, subj, verb, obj, **kwargs):
         self.subj = subj
         self.verb = verb
         self.obj = obj
-        if xtra:
-            for k in xtra:
-                self[k] = xtra[k]
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+        #self.xtra = kwargs
 
     def __repr__(self):
         xtra = []
         for k in self.__dict__:
             v = self.__dict__[k]
             if (k != "subj") and (k != "verb") and (k != "obj"):
-                xtra.push(f"{k}: {v}")
+                xtra.append(f"{k} {v}")
 
         return " ".join(
             [

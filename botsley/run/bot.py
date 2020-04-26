@@ -5,7 +5,6 @@ from uuid import uuid1
 from botsley.app import logger
 from botsley.run import *
 from botsley.run import _impasse
-#from botsley.run.task import Task, Module, TS_RUNNING, TS_SUCCESS
 from botsley.run.behavior import *
 from botsley.run.context import Context
 from botsley.run.policy import Policy
@@ -18,7 +17,6 @@ class Bot(Policy):
         self.ctx = Context()
         self.tasks = []
         self.posts = []
-        self.queue = []
         self.proposals = []
         self.scheduled = False
         self.impassed = False
@@ -29,21 +27,17 @@ class Bot(Policy):
         ])
         '''
         self.signals = None
-    '''
-    def schedule(self, t):
-        if t == self:
-            return super().schedule(t)
+        self._tree = None
 
-        if isinstance(t, Bot):
-            t.run()
-        # self.schedule(self)
-        return t
-        #Else ...
-        t.bot = self
-        self.queue.append(t)
-        self.schedule(self)
-        return t
-    '''
+    @property
+    def tree(self):
+        return self._tree
+
+    @tree.setter
+    def tree(self, tree):
+        self._tree = tree
+        self.schedule(tree)
+
     def broadcast(self, msg):
         m = copy(msg)
         logger.debug(f"Broadcast:\t{m}")
@@ -87,34 +81,15 @@ class Bot(Policy):
 
     def fire(self, msg):
         for m in msg.sender.matchRules(msg):
-            logger.debug(f"Fire:\t{m}:")
-            #self.schedule(m.to)
-            self.schedule(m.rule.action)
+            #logger.debug(f"Fire:\t{m}:")
+            print('fire', m)
+            self.schedule(m.rule.action, m)
 
     async def main(self, msg=None):
         t = None
         status = None
         post = None
         logger.debug(f"@main {self.id}")
-        logger.debug('eval tasks')
-        if len(self.queue) != 0:
-            t = self.queue.pop(0)
-            while t:
-                logger.debug(f"Tick:\t({t.constructor.name}) {t.msg}")
-                status = t.action()
-                if status == TS_RUNNING:
-                    self.queue.append(t)
-                elif t.parent:
-                    pStatus = t.parent.strategy(t)
-                    if pStatus == TS_RUNNING:
-                        self.queue.append(t.parent)
-                elif t.caller:
-                    t.caller.resume()
-                    self.queue.append(t.caller)
-
-                t = self.queue.pop(0)
-
-        logger.debug('eval posts')
 
         posts = self.posts
         self.posts = []
@@ -133,7 +108,7 @@ class Bot(Policy):
         return self.status
 
     def idle(self):
-        return len(self.posts) == 0 and len(self.queue) == 0 and len(self.tasks) == 0
+        return len(self.posts) == 0 and len(self.tasks) == 0
 
     def signal (self, trigger, task):
         console.log(trigger.verb)
@@ -147,11 +122,5 @@ class Bot(Policy):
         self.post(Attempt(Achieve(None, _impasse, None)))
         #self.schedule(self)
         return False
-    '''
-    def run(self, **queue):
-        for task in queue:
-            self.schedule(task)
-        return self.main()
-    '''
 
 Bot_ = lambda before: Bot(before)
