@@ -1,8 +1,10 @@
+import time
 import contextvars
 from contextlib import contextmanager
 from uuid import uuid1
 from copy import copy
 import inspect
+from loguru import logger
 
 from botsley.run import *
 
@@ -52,16 +54,18 @@ class Task:
         pass
 
     async def sleep(self, period=None):
-        print('sleep', period)
-        #self.status = TS_SUSPENDED
-        return await self
+        #print('sleep', period)
+        if not period or period == 0:
+            # quick and dirty way to yield control back to the runner
+            return await self
+        return await Sleep(period)
 
     def use(self, fn):
         if not inspect.iscoroutinefunction(fn):
             raise Exception("Not a coroutine function!", fn)
         self.main = method(self, fn)
 
-    def start(self):
+    def begin(self):
         self.coro = self.main(self.msg)
         self.status = TS_RUNNING
         # print(self.coro)
@@ -164,6 +168,26 @@ class Task:
         self.add(b)
         return self
 
+class Trap(Task):
+    pass
+
+class Sleep(Trap):
+    def __init__(self, period):
+        super().__init__()
+        self.period = period
+        self.start = time.time()
+
+    async def main(self, msg=None):
+        while True:
+            current = time.time()
+            elapsed = current - self.start
+            logger.debug(f'elapsed {elapsed}')
+            logger.debug(f'period {self.period}')
+            if elapsed >= self.period:
+                logger.debug('sleeps over')
+                return elapsed
+            logger.debug('sleep some more')
+            await self.sleep()
 
 #
 # Runner
@@ -172,6 +196,13 @@ class Runner:
     def __init__(self):
         self.queue = []
         self.callbacks = []
+
+    def trap(self, task):
+        if isinstance(task, Sleep):
+            # run it as a normal task
+            self.schedule(task)
+        else:
+            raise Exception('not implemented')
 
     def schedule(self, obj, msg=None):
         print("schedule msg", msg)
@@ -182,7 +213,7 @@ class Runner:
             raise Exception("Not a Task!", obj)
         else:
             task = obj
-        task.start()
+        task.begin()
         self.queue.append(task)
 
     def reschedule(self, task):
@@ -190,31 +221,37 @@ class Runner:
         self.queue.append(task)
 
     def step(self):
-        print('runner.step')
+        logger.debug('runner.step')
         queue = self.queue
         self.queue = []
         for task in queue:
-            print("task", task)
-            print("task.status", task.status)
+            logger.debug("task", task)
+            logger.debug("task.status", task.status)
             try:
-                print("task.coro", task.coro)
+                logger.debug(f"task.coro {task.coro}")
                 awaited = task.coro.send(task.awaited.result if task.awaited else None)
-                print("awaited", awaited)
+                logger.debug("awaited", awaited)
+                
                 if awaited is task:
-                    print('sleeping task')
+                    # quick and dirty way to yield control back to the runner
+                    logger.debug('task yielded control')
                     self.reschedule(task)
                 elif awaited:
                     task.status = TS_SUSPENDED
                     task.awaited = awaited
                     awaited.awaiter = task
-                    self.schedule(awaited)
+                    #self.schedule(awaited)
+                    if isinstance(awaited, Trap):
+                        self.trap(awaited)
+                    else:
+                        self.schedule(awaited)
 
             except StopIteration as exception:
                 result = exception.value
-                print("stop result", result)
+                logger.debug(f"stop result {result}")
                 task.result = result
                 if task.awaiter:
-                    print("task.awaiter", task.awaiter)
+                    logger.debug(f"task.awaiter {task.awaiter}")
                     self.reschedule(task.awaiter)
 
             # except Failure as exception:
@@ -225,7 +262,7 @@ class Runner:
             callback()
 
     def run(self, task):
-        print('runner.run')
+        logger.debug('runner.run')
         self.schedule(task)
         while len(self.queue) != 0:
             self.step()

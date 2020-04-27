@@ -81,8 +81,7 @@ class Bot(Policy):
 
     def fire(self, msg):
         for m in msg.sender.matchRules(msg):
-            #logger.debug(f"Fire:\t{m}:")
-            print('fire', m)
+            logger.debug(f"Fire:\t{m}:")
             self.schedule(m.rule.action, m)
 
     async def main(self, msg=None):
