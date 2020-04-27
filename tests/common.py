@@ -27,10 +27,13 @@ defs = term_([
 
 _module = __import__(__name__)
 
-for k in defs:
-  v = defs[k]
-  #exports[k] = v;
-  setattr(_module, k, v)
+def inject_defs(module):
+  for k in defs:
+      v = defs[k]
+      setattr(module, k, v)
+  setattr(module, '__', None)
+
+inject_defs(_module)
 
 package = package_(_module)
 unit_ = lambda cfg, parent=package: Unit(parent).config(cfg)

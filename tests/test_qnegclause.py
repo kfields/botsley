@@ -15,26 +15,23 @@ inject_defs(_module)
 
 class Test(unittest.TestCase):
     def test(self):
-        ctx = yamlcontext_().load(asset('cleavers.yml'))
+        ctx = yamlcontext_().load(asset('bob.yml'))
 
         logger.info(h2("All Clauses"))
         logger.info(str(ctx))
 
         logger.info(h2('Binders'))
-
         _x_ = Variable('$x')
-        _d_ = Variable('$d')
-        _w_ = Variable('$w')
+        _y_ = Variable('$y')
+        _z_ = Variable('$z')
 
-        logger.info("ctx.query Believe, $x, dad, $d")
-
-        ctx.query(Believe, _x_, _dad, _d_) \
-            .exec(lambda binder: logger.info(binder))
-
-        logger.info('ctx.query Believe, $x, dad, $d .and Believe, $d, wife, $w')
-        
-        ctx.query(Believe, _x_, _dad, _d_) \
-            ._and(Believe, _d_, _wife, _w_) \
+        logger.info('''
+        ctx.query Believe, _$x, _likes, _$y
+        .not Believe, _$x, _likes, _Chips
+        '''
+        )
+        ctx.query(Believe, _x_, _likes, _Fish) \
+            ._not(Believe, _x_, _likes, _Chips) \
             .exec(lambda binder: logger.info(binder))
 
 if __name__ == "__main__":

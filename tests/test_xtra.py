@@ -10,12 +10,7 @@ _module = sys.modules[__name__]
 _unit = unit_(_module, package)
 logger = _unit.logger
 
-for k in defs:
-    v = defs[k]
-    setattr(_module, k, v)
-
-__ = None
-
+inject_defs(_module)
 
 class Test(unittest.TestCase):
     def test(self):
