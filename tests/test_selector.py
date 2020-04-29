@@ -8,12 +8,13 @@ class Test(unittest.TestCase):
         with selector() as s:
             with action() as a:
                 async def fn(task, msg):
-                    print('Hi')
+                    print('I failed')
+                    task.fail()
                 a.use(fn)
-            with action() as a:
+            with action() as b:
                 async def fn(task, msg):
                     print('Bye')
-                a.use(fn)
+                b.use(fn)
 
         s.run()
 

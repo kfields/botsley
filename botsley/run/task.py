@@ -54,11 +54,16 @@ class Task:
         pass
 
     async def sleep(self, period=None):
-        #print('sleep', period)
+        # print('sleep', period)
         if not period or period == 0:
             # quick and dirty way to yield control back to the runner
             return await self
         return await Sleep(period)
+
+    def check(self):
+        if self.status == TS_RUNNING:
+            return True
+        return False
 
     def use(self, fn):
         if not inspect.iscoroutinefunction(fn):
@@ -138,19 +143,6 @@ class Task:
         msg.sender = self
         return self.bot.post(msg)
 
-    async def spawn(self, o, wait=False):
-        task = None
-        if type(o, function):
-            task = Task(o)
-        elif isinstance(o, Task):
-            task = o
-        else:
-            raise Exception("Expecting Function or Task")
-        if wait:
-            task.caller = self
-
-        return runner.schedule(task)
-
     #
     # Utility
     #
@@ -168,8 +160,10 @@ class Task:
         self.add(b)
         return self
 
+
 class Trap(Task):
     pass
+
 
 class Sleep(Trap):
     def __init__(self, period):
@@ -181,13 +175,14 @@ class Sleep(Trap):
         while True:
             current = time.time()
             elapsed = current - self.start
-            logger.debug(f'elapsed {elapsed}')
-            logger.debug(f'period {self.period}')
+            logger.debug(f"elapsed {elapsed}")
+            logger.debug(f"period {self.period}")
             if elapsed >= self.period:
-                logger.debug('sleeps over')
+                logger.debug("sleeps over")
                 return elapsed
-            logger.debug('sleep some more')
+            logger.debug("sleep some more")
             await self.sleep()
+
 
 #
 # Runner
@@ -202,10 +197,10 @@ class Runner:
             # run it as a normal task
             self.schedule(task)
         else:
-            raise Exception('not implemented')
+            raise Exception("Not implemented")
 
     def schedule(self, obj, msg=None):
-        print("schedule msg", msg)
+        logger.debug(f"schedule msg {msg}")
         task = None
         if inspect.iscoroutinefunction(obj):
             task = Task(obj, msg)
@@ -221,26 +216,30 @@ class Runner:
         self.queue.append(task)
 
     def step(self):
-        logger.debug('runner.step')
+        logger.debug("runner.step")
         queue = self.queue
         self.queue = []
         for task in queue:
-            logger.debug("task", task)
-            logger.debug("task.status", task.status)
+            logger.debug(f"task {task}")
+            logger.debug(f"task.status {task.status}")
             try:
                 logger.debug(f"task.coro {task.coro}")
-                awaited = task.coro.send(task.awaited.result if task.awaited else None)
+                result = None
+                if task.awaited:
+                    result = task.awaited.result
+                    task.awaited = None
+                awaited = task.coro.send(result)
                 logger.debug("awaited", awaited)
-                
+
                 if awaited is task:
                     # quick and dirty way to yield control back to the runner
-                    logger.debug('task yielded control')
+                    logger.debug("task yielded control")
                     self.reschedule(task)
                 elif awaited:
                     task.status = TS_SUSPENDED
                     task.awaited = awaited
                     awaited.awaiter = task
-                    #self.schedule(awaited)
+                    # self.schedule(awaited)
                     if isinstance(awaited, Trap):
                         self.trap(awaited)
                     else:
@@ -262,7 +261,7 @@ class Runner:
             callback()
 
     def run(self, task):
-        logger.debug('runner.run')
+        logger.debug("runner.run")
         self.schedule(task)
         while len(self.queue) != 0:
             self.step()

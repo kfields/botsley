@@ -164,14 +164,19 @@ def sequence():
 class Selector(Behavior):
     def __init__(self):
         super().__init__()
-
+    '''
     async def main(self, msg=None):
         for child in self.children:
             result = await child
-            '''
-            if result == TS_FAILURE:
-                return self.fail()
-            '''
+    '''
+    async def main(self, msg=None):
+        while True:
+            for child in self.children:
+                result = await child
+                if result == TS_SUCCESS:
+                    break
+            else:
+                self.fail()
 
 @contextmanager
 def selector():
