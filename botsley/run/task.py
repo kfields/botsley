@@ -1,6 +1,4 @@
 import time
-import contextvars
-from contextlib import contextmanager
 from uuid import uuid1
 from copy import copy
 import inspect
@@ -10,7 +8,8 @@ from botsley.run import *
 
 TS_INITIAL = "Initial"
 TS_RUNNING = "Running"
-TS_SUCCESS = "Success"
+#TS_SUCCESS = "Success"
+TS_SUCCESS = None
 TS_FAILURE = "Failure"
 TS_CANCELLED = "Cancelled"
 TS_SUSPENDED = "Suspended"
@@ -50,17 +49,25 @@ class Task:
     def __await__(self):
         return (yield self)
 
-    async def main(self, msg=None):
+    def enter(self):
         pass
+
+    def exit(self, status):
+        return status
+
+    async def main(self, msg=None):
+        self.enter()
+        self.exit(self.succeed())
 
     async def sleep(self, period=None):
         # print('sleep', period)
         if not period or period == 0:
             # quick and dirty way to yield control back to the runner
+            self.status = TS_SUSPENDED
             return await self
         return await Sleep(period)
 
-    def check(self):
+    def ok(self):
         if self.status == TS_RUNNING:
             return True
         return False
@@ -73,7 +80,7 @@ class Task:
     def begin(self):
         self.coro = self.main(self.msg)
         self.status = TS_RUNNING
-        # print(self.coro)
+        return True
 
     def add(self, child):
         child.parent = self
@@ -117,7 +124,7 @@ class Task:
         return self.status
 
     def fail(self):
-        print("fail")
+        logger.debug(f"fail: {self}")
         self.status = TS_FAILURE
         if self.parent:
             return self.parent.strategy(self)
@@ -125,7 +132,7 @@ class Task:
             return self.status
 
     def cancel(self):
-        print("cancel")
+        logger.debug(f"cancel: {self}")
         self.status = TS_CANCELLED
         for child in self.children:
             child.cancel()
@@ -164,6 +171,10 @@ class Task:
 class Trap(Task):
     pass
 
+class NoOp(Trap):
+    pass
+
+NOOP = NoOp()
 
 class Sleep(Trap):
     def __init__(self, period):
@@ -193,7 +204,9 @@ class Runner:
         self.callbacks = []
 
     def trap(self, task):
-        if isinstance(task, Sleep):
+        if isinstance(task, NoOp):
+            self.schedule(task)
+        elif isinstance(task, Sleep):
             # run it as a normal task
             self.schedule(task)
         else:
@@ -208,8 +221,9 @@ class Runner:
             raise Exception("Not a Task!", obj)
         else:
             task = obj
-        task.begin()
-        self.queue.append(task)
+        ready = task.begin()
+        if ready:
+            self.queue.append(task)
 
     def reschedule(self, task):
         task.status = TS_RUNNING
@@ -228,6 +242,7 @@ class Runner:
                 if task.awaited:
                     result = task.awaited.result
                     task.awaited = None
+                    
                 awaited = task.coro.send(result)
                 logger.debug("awaited", awaited)
 

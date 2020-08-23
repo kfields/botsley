@@ -85,9 +85,6 @@ class Bot(Policy):
             self.schedule(m.rule.action, m)
 
     async def main(self, msg=None):
-        t = None
-        status = None
-        post = None
         logger.debug(f"@main {self.id}")
 
         posts = self.posts
@@ -101,7 +98,6 @@ class Bot(Policy):
                     self.fork(m.to)
 
         self.proposals = []
-        #self.resolve()
         self.status = TS_SUCCESS
 
         return self.status
@@ -112,7 +108,7 @@ class Bot(Policy):
     def signal (self, trigger, task):
         console.log(trigger.verb)
         self.signals.get(trigger.verb).append(task)
-
+        
     def impasse(self):
         if self.impassed:
             return true 

@@ -1,30 +1,33 @@
+from loguru import logger
+
 from botsley.run.task import *
+from .helpers import *
 
-#
-# Context Management
-#
-PARENT = "parent"
-
-ctx_parent = contextvars.ContextVar("ctx_parent", default=None)
-
-
-def ctx_enter(child):
-    parent = ctx_parent.get()
-    if parent:
-        child.parent = parent
-        child.bot = parent.bot
-        parent.add(child)
-
-    ctx_parent.set(child)
-    return {PARENT: parent}
-
-
-def ctx_exit(ctx):
-    ctx_parent.set(ctx[PARENT])
 
 class Behavior(Task):
     def __init__(self, action=None, msg=None):
         super().__init__(action, msg)
+
+    @property
+    def activity(self):
+        if self.neuron:
+            return self.neuron.activity
+        return 1
+
+    def activate(self):
+        if self.neuron:
+            return self.neuron.activate()
+
+    def deactivate(self):
+        if self.neuron:
+            return self.neuron.deactivate()
+
+    def __await__(self):
+        activity = self.activity
+        if activity > 0:
+            return (yield self)
+        return TS_FAILURE
+        # return (yield NOOP)
 
     def define(self, trigger, action):
         return self.addRule(Rule(trigger, action))
@@ -89,9 +92,9 @@ class Sensor(Behavior):
 @contextmanager
 def sensor():
     task = Sensor()
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 sensor_ = lambda: Sensor()
@@ -106,13 +109,14 @@ class Condition(Behavior):
             if result == TS_FAILURE:
                 return self.fail()
 
+
 @contextmanager
 def condition(task=None):
     if not task:
         task = Condition()
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 condition_ = lambda: Condition()
@@ -128,9 +132,9 @@ class Action(Behavior):
 def action(task=None):
     if not task:
         task = Action()
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 action_ = lambda action: Action(action)
@@ -140,9 +144,6 @@ action_ = lambda action: Action(action)
 # Sequence
 #
 class Sequence(Behavior):
-    def __init__(self):
-        super().__init__()
-
     async def main(self, msg=None):
         for child in self.children:
             result = await child
@@ -151,39 +152,71 @@ class Sequence(Behavior):
 
 
 @contextmanager
-def sequence():
-    task = Sequence()
-    ctx = ctx_enter(task)
+def sequence(task=None):
+    if not task:
+        task = Sequence()
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 #
 # Selector
 #
 class Selector(Behavior):
-    def __init__(self):
-        super().__init__()
-    '''
     async def main(self, msg=None):
         for child in self.children:
+            print(child)
             result = await child
-    '''
-    async def main(self, msg=None):
-        while True:
-            for child in self.children:
-                result = await child
-                if result == TS_SUCCESS:
-                    break
-            else:
-                self.fail()
+            print("selector result: ", result)
+            # if result == TS_SUCCESS:
+            if not result:
+                break
+        else:
+            return self.fail()
+
 
 @contextmanager
 def selector():
     task = Selector()
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
+
+
+#
+# Utility
+#
+class Utility(Behavior):
+    def enter(self):
+        for child in self.children:
+            child.activate()
+
+    def exit(self):
+        for child in self.children:
+            child.deactivate()
+
+    async def main(self, msg=None):
+        highest = 0
+        best = None
+        for child in self.children:
+            activity = child.activity
+            if activity > highest:
+                highest = activity
+                best = child
+        print('Best:', best)
+        if best is not None:
+            result = await best
+            print("utility result: ", result)
+
+
+@contextmanager
+def utility():
+    task = Utility()
+    ctx = task_ctx_enter(task)
+    yield task
+    task_ctx_exit(ctx)
+
 
 #
 # Loop
@@ -204,9 +237,9 @@ class Timer(Behavior):
 @contextmanager
 def timer(timeout):
     task = Timer(timeout)
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 #
@@ -217,7 +250,7 @@ class Loop(Behavior):
         super().__init__()
 
     async def main(self, msg=None):
-        while True:
+        while self.ok():
             for child in self.children:
                 result = await child
                 print("loop result", result)
@@ -228,9 +261,31 @@ class Loop(Behavior):
 @contextmanager
 def loop():
     task = Loop()
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
+
+
+#
+# Loop
+#
+class Forever(Behavior):
+    def __init__(self):
+        super().__init__()
+
+    async def main(self, msg=None):
+        while self.ok():
+            for child in self.children:
+                result = await child
+                print("forever result", result)
+
+
+@contextmanager
+def forever():
+    task = Forever()
+    ctx = task_ctx_enter(task)
+    yield task
+    task_ctx_exit(ctx)
 
 
 #
@@ -248,7 +303,7 @@ class Counter(Behavior):
             self.count = i
             for child in self.children:
                 result = await child
-                print("counter result", result)
+                logger.debug(f"counter result: {result}")
                 if result == TS_FAILURE:
                     return self.fail()
 
@@ -256,9 +311,9 @@ class Counter(Behavior):
 @contextmanager
 def counter(start, stop):
     task = Counter(start, stop)
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 #
@@ -277,9 +332,10 @@ class Parallel(Behavior):
 @contextmanager
 def parallel():
     task = Parallel()
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
+
 
 #
 # Root
@@ -287,14 +343,15 @@ def parallel():
 class Root(Parallel):
     pass
 
+
 @contextmanager
 def root(bot=None):
+    bot_ctx_root.set(bot)
     task = Root()
-    task.bot = bot
-    ctx = ctx_enter(task)
+    ctx = task_ctx_enter(task)
     yield task
     bot.tree = task
-    ctx_exit(ctx)
+    task_ctx_exit(ctx)
 
 
 #

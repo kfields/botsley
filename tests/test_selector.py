@@ -9,7 +9,7 @@ class Test(unittest.TestCase):
             with action() as a:
                 async def fn(task, msg):
                     print('I failed')
-                    task.fail()
+                    return task.fail()
                 a.use(fn)
             with action() as b:
                 async def fn(task, msg):

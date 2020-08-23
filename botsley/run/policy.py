@@ -36,6 +36,20 @@ class Policy(Behavior, metaclass=PolicyMeta):
     def add(self, r):
         self.rules.append(r)
 
+    def remove(self, r):
+        index = self.rules.indexOf(r)
+        if index > -1:
+            self.rules.splice(index, 1)
+        return self
+
+    def subscribe(self, trigger, action):
+        rule = Rule(trigger, action)
+        self.add(rule)
+        return rule
+
+    def unsubscribe(self, rule):
+        self.removeRule(rule)
+
     def find(self, msg):
         result = []
         for r in self.rules:

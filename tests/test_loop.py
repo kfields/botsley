@@ -8,7 +8,7 @@ class Test(unittest.TestCase):
         with timer(0.5) as top:
             with loop() as l:
                 with counter(1, 11) as cntr:
-                    with condition() as c:
+                    with action() as c:
 
                         async def fn(task, msg):
                             if cntr.count > 5:
