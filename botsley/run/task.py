@@ -1,6 +1,5 @@
 import time
 from uuid import uuid1
-from copy import copy
 import inspect
 from loguru import logger
 
