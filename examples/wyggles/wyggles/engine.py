@@ -1,7 +1,5 @@
-import math
-import os
+from typing import Any, Callable, List, Optional, Union, Coroutine
 import random
-import sys
 import copy
 
 import pymunk
@@ -9,12 +7,13 @@ import pymunk
 from .layer import Layer
 
 from wyggles.mathutils import *
+from .beacon import Beacon
 
 world_left = 0
 world_bottom = 0
-#world_right = 1024
+# world_right = 1024
 world_right = 800
-#world_top = 768
+# world_top = 768
 world_top = 600
 
 
@@ -33,22 +32,23 @@ class SpriteEngine:
     def __init__(self):
         self.root = Layer("root")
         #
-        self.beacons = []
-        self.idCounter = 0
+        self.beacons: List[Beacon] = []
+        self.id_counter: int = 0
         #
-        self.gravityX = 0
-        # self.gravityY = 9.8 ;
-        self.gravityY = 0
+        self.gravity_x: float = 0
+        # self.gravity_y = 9.8 ;
+        self.gravity_y: float = 0
         # new stuff
         self.space = pymunk.Space()
         self.space.iterations = 35
-        self.space.gravity = (self.gravityX, self.gravityY)
+        self.space.gravity = (self.gravity_x, self.gravity_y)
 
-    def addBeacon(self, beacon):
+    def add_beacon(self, beacon):
         self.beacons.append(beacon)
 
-    def removeBeacon(self, beacon):
-        self.beacons.remove(beacon)
+    def remove_beacon(self, beacon):
+        if beacon in self.beacons:
+            self.beacons.remove(beacon)
 
     def query(self, x, y, distance):
         result = []
@@ -62,8 +62,8 @@ class SpriteEngine:
         return result
 
     def gen_id(self, name):
-        result = name + str(self.idCounter)
-        self.idCounter += 1
+        result = name + str(self.id_counter)
+        self.id_counter += 1
         return result
 
     def get_root(self):

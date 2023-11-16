@@ -1,17 +1,7 @@
 from loguru import logger
 
+from ..task import Method
 from .helpers import *
-
-class method:
-    def __init__(self, instance, func):
-        self.im_self = instance
-        self.im_class = instance.__class__
-        self.im_func = func
-
-    def __call__(self, *args, **kw):
-        if self.im_self:
-            args = (self.im_self,) + args
-        return self.im_func(*args, **kw)
 
 
 class Neuron:
@@ -28,7 +18,7 @@ class Neuron:
         return 1
 
     def use(self, fn):
-        self.main = method(self, fn)
+        self.main = Method(self, fn)
 
 
 @contextmanager

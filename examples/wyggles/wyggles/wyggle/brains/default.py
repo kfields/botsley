@@ -1,11 +1,11 @@
+from typing import Any, Callable, List, Optional, Union, Coroutine
+
 import math
 import random
-import arcade
 
-import wyggles.app
+from wyggles.beacon import Beacon
 from wyggles.mathutils import *
 from wyggles.engine import *
-import wyggles.app
 from wyggles.wyggle.brain import WyggleBrain
 from wyggles.fruit import Fruit
 
@@ -90,8 +90,8 @@ class DefaultWyggleBrain(WyggleBrain):
         #
         state = self.state
         if state == "wanderer":
-            if not self.considerEating(beacons):
-                self.considerKicking(beacons)
+            if not self.consider_eating(beacons):
+                self.consider_kicking(beacons)
         elif state == "hunter":
             pass
         elif state == "eater":
@@ -102,7 +102,7 @@ class DefaultWyggleBrain(WyggleBrain):
         if beacons != None:
             del beacons
 
-    def considerEating(self, beacons):
+    def consider_eating(self, beacons: List[Beacon]):
         apple = None
         for beacon in beacons:
             if isinstance(beacon.sprite, Fruit):
@@ -117,7 +117,7 @@ class DefaultWyggleBrain(WyggleBrain):
         self.state = "hunter"
         return True
 
-    def considerKicking(self, beacons):
+    def consider_kicking(self, beacons):
         ball = None
         for beacon in beacons:
             if beacon.type == "ball":

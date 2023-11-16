@@ -1,13 +1,14 @@
+from typing import Any, Callable, List, Optional, Union, Coroutine
 import time
 from uuid import uuid1
 import inspect
+
 from loguru import logger
 
 from botsley.run import *
 
 TS_INITIAL = "Initial"
 TS_RUNNING = "Running"
-#TS_SUCCESS = "Success"
 TS_SUCCESS = None
 TS_FAILURE = "Failure"
 TS_CANCELLED = "Cancelled"
@@ -15,7 +16,7 @@ TS_SUSPENDED = "Suspended"
 TS_HALTED = "Halted"
 
 
-class method:
+class Method:
     def __init__(self, instance, func):
         self.im_self = instance
         self.im_class = instance.__class__
@@ -32,16 +33,15 @@ class Task:
         if action:
             self.use(action)
         self.msg = msg
-        self.coro = None
+        self.coro: Coroutine = None
         self.awaited = None
         self.awaiter = None
-        self.result = None
+        self.result: Any = None
 
         self.id = uuid1()
         self.bot = None
-        self.parent = None
-        self.children = []
-        self.result = None
+        self.parent: Task = None
+        self.children: List[Task] = []
         self.status = TS_INITIAL
         self.tasks = None
 
@@ -58,8 +58,8 @@ class Task:
         self.enter()
         self.exit(self.succeed())
 
-    async def sleep(self, period=None):
-        # print('sleep', period)
+    async def sleep(self, period:float=None):
+        # logger.debug(f'sleep: {period}')
         if not period or period == 0:
             # quick and dirty way to yield control back to the runner
             self.status = TS_SUSPENDED
@@ -71,32 +71,33 @@ class Task:
             return True
         return False
 
-    def use(self, fn):
+    def use(self, fn: Coroutine):
         if not inspect.iscoroutinefunction(fn):
-            raise Exception("Not a coroutine function!", fn)
-        self.main = method(self, fn)
+            raise Exception("Not a coroutine!", fn)
+        self.main = Method(self, fn)
 
     def begin(self):
         self.coro = self.main(self.msg)
         self.status = TS_RUNNING
         return True
 
-    def add(self, child):
+    def add(self, child: 'Task'):
         child.parent = self
         child.tasks = self.tasks
         self.children.append(child)
         return self
 
-    def remove(self, child):
-        index = self.children.indexOf(child)
-        if index > -1:
-            self.children.splice(index, 1)
+    def remove(self, child: 'Task'):
+        try:
+            self.children.remove(child)
+        except ValueError as e:
+            print(e)
+            exit()
         return self
-
     #
     # EXECUTION
     #
-    def strategy(self, child):
+    def strategy(self, child: 'Task'):
         status = child.status
         if status == TS_FAILURE:
             # raise Failure()
@@ -104,7 +105,7 @@ class Task:
         elif status == TS_SUCCESS:
             return status
 
-    def schedule(self, task, msg=None):
+    def schedule(self, task: 'Task', msg=None):
         runner.schedule(task, msg)
 
     def run(self):
@@ -153,13 +154,13 @@ class Task:
     # Utility
     #
     def toJSON(self):
-        return {TYPE: self.__class__.__name, MSG: self.msg}
+        return {'TYPE': self.__class__.__name__, 'MSG': self.msg}
 
     #
     # DSL
     #
     def chain(self, b):
-        a = self.children[self.children.length - 1]
+        a = self.children[-1]
         if a:
             a.dst = b
             b.src = a
@@ -176,7 +177,7 @@ class NoOp(Trap):
 NOOP = NoOp()
 
 class Sleep(Trap):
-    def __init__(self, period):
+    def __init__(self, period: float):
         super().__init__()
         self.period = period
         self.start = time.time()

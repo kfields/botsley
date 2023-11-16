@@ -1,8 +1,5 @@
 import unittest
 
-from botsley.application import create_app
-app = create_app()
-
 from botsley.run import *
 from botsley.run.behavior import *
 from botsley.run.agent import Agent

@@ -1,12 +1,16 @@
 from loguru import logger
 
 from botsley.run.task import *
+#TODO: circular import
+#from botsley.run.policy import Policy
+from .neuron import Neuron
 from .helpers import *
 
 
 class Behavior(Task):
     def __init__(self, action=None, msg=None):
         super().__init__(action, msg)
+        self.neuron: Neuron = None
 
     @property
     def activity(self):
@@ -30,21 +34,21 @@ class Behavior(Task):
         # return (yield NOOP)
 
     def define(self, trigger, action):
-        return self.addRule(Rule(trigger, action))
+        return self.add_rule(Rule(trigger, action))
 
     def sig(self, trigger, action):
         # self.bot.signal(trigger, self)
         return self.define(trigger, action)
 
-    def addRule(self, r):
+    def add_rule(self, r):
         if not self.policy:
             self.policy = Policy(self)
         return self.policy.add(r)
 
-    def findRule(self, m):
-        return self.findRules(m).pop()
+    def find_rule(self, m):
+        return self.find_rules(m).pop()
 
-    def findRules(self, m):
+    def find_rules(self, m):
         if self.policy:
             return self.policy.find(m)
         return []
@@ -99,6 +103,7 @@ def sensor():
 
 sensor_ = lambda: Sensor()
 
+
 #
 # Condition
 #
@@ -106,7 +111,7 @@ class Condition(Behavior):
     async def main(self, msg=None):
         for child in self.children:
             result = await child
-            if result == TS_FAILURE:
+            if result is TS_FAILURE:
                 return self.fail()
 
 
@@ -120,6 +125,7 @@ def condition(task=None):
 
 
 condition_ = lambda: Condition()
+
 
 #
 # Action
@@ -147,7 +153,7 @@ class Sequence(Behavior):
     async def main(self, msg=None):
         for child in self.children:
             result = await child
-            if result == TS_FAILURE:
+            if result is TS_FAILURE:
                 return self.fail()
 
 
@@ -169,8 +175,7 @@ class Selector(Behavior):
             logger.debug("selector await child: {child}")
             result = await child
             logger.debug("selector result: {result}")
-            # if result == TS_SUCCESS:
-            if not result:
+            if result is TS_SUCCESS:
                 break
         else:
             return self.fail()
@@ -204,7 +209,7 @@ class Utility(Behavior):
             if activity > highest:
                 highest = activity
                 best = child
-        logger.debug('utility best: {best}')
+        logger.debug("utility best: {best}")
         if best is not None:
             result = await best
             logger.debug("utility result: ", result)
@@ -254,7 +259,7 @@ class Loop(Behavior):
             for child in self.children:
                 result = await child
                 logger.debug("loop result: {result}")
-                if result == TS_FAILURE:
+                if result is TS_FAILURE:
                     return self.fail()
 
 
@@ -304,7 +309,7 @@ class Counter(Behavior):
             for child in self.children:
                 result = await child
                 logger.debug(f"counter result: {result}")
-                if result == TS_FAILURE:
+                if result is TS_FAILURE:
                     return self.fail()
 
 
@@ -385,6 +390,7 @@ class Method(Sequence):
 
 
 method_ = lambda action: Method(action)
+
 
 #
 # Module

@@ -1,8 +1,4 @@
 import math
-import random
-
-import numpy as np
-import arcade
 
 from wyggles.sprite import Sprite
 from wyggles.engine import *

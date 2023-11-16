@@ -58,14 +58,14 @@ class Fruit(Sprite):
         self.type = dna.kind
         self.energy = 5
         self.beacon = Beacon(self, self.type)
-        sprite_engine.addBeacon(self.beacon)
+        sprite_engine.add_beacon(self.beacon)
         self.texture = dna.textures[0]
 
     def receive_munch(self):
         self.energy -= 1
         if(self.energy <= 0):
             self.hide()
-            sprite_engine.removeBeacon(self.beacon)
+            sprite_engine.remove_beacon(self.beacon)
             self.layer.remove_sprite(self)
             return 0.01
         #else

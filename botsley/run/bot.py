@@ -1,4 +1,3 @@
-import asyncio
 from copy import copy
 from uuid import uuid1
 from loguru import logger
@@ -12,53 +11,47 @@ from botsley.run.policy import Policy
 class Bot(Policy):
     def __init__(self):
         super().__init__()
-        self.policy = self
+        self.policy: Policy = self
         self.id = uuid1()
         self.ctx = Context()
-        self.tasks = []
-        self.posts = []
-        self.proposals = []
-        self.scheduled = False
-        self.impassed = False
-        # self.post(Attempt(Achieve(null, _start, null)))
-        '''
-        self.signals = Map([
-            [_impasse, []]
-        ])
-        '''
+        self.tasks: List[Task] = []
+        self.posts: List[Message] = []
+        self.proposals: List[Message] = []
+        self.scheduled: bool = False
+        self.impassed: bool = False
         self.signals = None
-        self._tree = None
+        self._tree: Task = None
 
     @property
-    def tree(self):
+    def tree(self) -> Task:
         return self._tree
 
     @tree.setter
-    def tree(self, tree):
+    def tree(self, tree: Task):
         self._tree = tree
         self.schedule(tree)
 
-    def broadcast(self, msg):
+    def broadcast(self, msg: Message):
         m = copy(msg)
         logger.debug(f"Broadcast:\t{m}")
         m.sender = self
         self.post(m)
         return map(self.tasks, lambda t: t.broadcast(m))
 
-    def post(self, msg):
+    def post(self, msg: Message):
         if not msg.sender:
             msg.sender = self
         logger.debug(f"Post:\t{msg}")
         return self.posts.append(msg)
 
-    def fork(self, t):
+    def fork(self, t: Task):
         logger.debug(f"Fork:\t{t.msg}")
         child = Bot()
         child.policy = self.policy
         child.ctx = self.ctx.copy()
         return child.run(t)
 
-    def dispatch(self, msg):
+    def dispatch(self, msg: Message):
         T = type(msg)
         if T is Propose:
             logger.debug(f"* \t{msg}")
@@ -79,7 +72,7 @@ class Bot(Policy):
             logger.debug(f"Eval:\t{msg}")
             return self.fire(msg)
 
-    def fire(self, msg):
+    def fire(self, msg: Message):
         for m in msg.sender.matchRules(msg):
             logger.debug(f"Fire:\t{m}:")
             self.schedule(m.rule.action, m)
@@ -106,12 +99,12 @@ class Bot(Policy):
         return len(self.posts) == 0 and len(self.tasks) == 0
 
     def signal (self, trigger, task):
-        console.log(trigger.verb)
+        logger.debug(trigger.verb)
         self.signals.get(trigger.verb).append(task)
         
     def impasse(self):
         if self.impassed:
-            return true 
+            return True 
         logger.debug(f"@impasse {self.id}")
         self.impassed = True
         self.post(Attempt(Achieve(None, _impasse, None)))

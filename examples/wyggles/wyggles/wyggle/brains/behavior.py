@@ -20,7 +20,7 @@ class SeesFood(Sequence):
         super().__init__()
         self.focus = None
 
-    async def main(self, msg):
+    async def main(self, msg: Message):
         beacons = sprite_engine.query(self.bot.x, self.bot.y, self.bot.sensor_range)
         self.focus = None
         for beacon in beacons:
@@ -38,7 +38,7 @@ class MoveTo(Action):
         super().__init__()
         self.sees = sees
 
-    async def main(self, msg):
+    async def main(self, msg: Message):
         self.bot.focus = focus = self.sees.focus
         self.bot.state = 'move_to'
         while self.ok():
@@ -53,7 +53,7 @@ class Eat(Action):
         super().__init__()
         self.sees = sees
 
-    async def main(self, msg):
+    async def main(self, msg: Message):
         self.bot.focus = focus = self.sees.focus
         self.bot.state = 'eat'
         
@@ -71,7 +71,7 @@ class SeesBall(Sequence):
         super().__init__()
         self.focus = None
 
-    async def main(self, msg):
+    async def main(self, msg: Message):
         beacons = sprite_engine.query(self.bot.x, self.bot.y, self.bot.sensor_range)
         self.focus = None
         for beacon in beacons:
@@ -88,14 +88,14 @@ class Kick(Action):
         super().__init__()
         self.sees = sees
 
-    async def main(self, msg):
+    async def main(self, msg: Message):
         self.bot.focus = focus = self.sees.focus
         self.bot.state = 'kick'
         focus.receive_kick(self.bot.heading, 200)
         self.bot.reset()
 
 class Wander(Action):
-    async def main(self, msg):
+    async def main(self, msg: Message):
         self.bot.state = 'wander'
         while self.ok():
             await self.sleep()

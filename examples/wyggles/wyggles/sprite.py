@@ -1,8 +1,6 @@
 import math
 import arcade
-import arcade
 
-from pyglet import image
 from wyggles.mathutils import *
 
 class Sprite(arcade.Sprite):

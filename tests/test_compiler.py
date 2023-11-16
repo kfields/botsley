@@ -1,13 +1,8 @@
-'''
-'''
 import sys
-import os
 
 sys.path.append('../')
 
 import unittest
-import pprint
-import json
 import itertools
 
 import botsley.assets as assets

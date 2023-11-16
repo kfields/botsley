@@ -14,7 +14,7 @@ class Ball(Sprite):
         self.load_texture('images/ball')
         #
         self.beacon = Beacon(self, self.type)
-        sprite_engine.addBeacon(self.beacon)
+        sprite_engine.add_beacon(self.beacon)
         #
         mass = 1
         radius = 16

@@ -124,12 +124,12 @@ class Clause:
         )
 
     def toJSON(self):
-        return {
-            TYPE: self.__class__.__name__,
-            SUBJ: self.subj and JSON.stringify(self.subj),
-            VERB: self.verb and JSON.stringify(self.verb),
-            OBJ: self.obj and JSON.stringify(self.obj),
-        }
+        return json.dumps({
+            "TYPE": self.__class__.__name__,
+            "SUBJ": self.subj if self.subj is not None else None,
+            "VERB": self.verb if self.verb is not None else None,
+            "OBJ": self.obj if self.obj is not None else None,
+        })
 
     def match(self, T, s, v, o=None, x=None):
         return isinstance(self, T) and match(
@@ -180,13 +180,14 @@ class Message:
     def __repr__(self):
         return " ".join([self.__class__.__name__, str(self.data)])
 
+
     def toJSON(self):
-        return {
-            TYPE: self.__class__.__name__,
-            DATA: self.data.toJSON(),
-            TO: self.to and self.to.toJSON(),
-            FROM: self.sender and self.sender.toJSON(),
-        }
+        return json.dumps({
+            "TYPE": self.__class__.__name__,
+            "DATA": self.data if self.data is not None else None,
+            "TO": self.to if self.to is not None else None,
+            "FROM": self.sender if self.sender is not None else None,
+        })
 
     def match(self, F, T, s, v, o, **x):
         return isinstance(self, F) and self.data.match(T, s, v, o, **x)
