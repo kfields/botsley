@@ -166,9 +166,9 @@ def sequence(task=None):
 class Selector(Behavior):
     async def main(self, msg=None):
         for child in self.children:
-            print(child)
+            logger.debug("selector await child: {child}")
             result = await child
-            print("selector result: ", result)
+            logger.debug("selector result: {result}")
             # if result == TS_SUCCESS:
             if not result:
                 break
@@ -204,10 +204,10 @@ class Utility(Behavior):
             if activity > highest:
                 highest = activity
                 best = child
-        print('Best:', best)
+        logger.debug('utility best: {best}')
         if best is not None:
             result = await best
-            print("utility result: ", result)
+            logger.debug("utility result: ", result)
 
 
 @contextmanager
@@ -253,7 +253,7 @@ class Loop(Behavior):
         while self.ok():
             for child in self.children:
                 result = await child
-                print("loop result", result)
+                logger.debug("loop result: {result}")
                 if result == TS_FAILURE:
                     return self.fail()
 
@@ -277,7 +277,7 @@ class Forever(Behavior):
         while self.ok():
             for child in self.children:
                 result = await child
-                print("forever result", result)
+                logger.debug("forever result: {result}")
 
 
 @contextmanager

@@ -1,10 +1,11 @@
+from loguru import logger
+
 from botsley.run import *
 from botsley.run import _I
 from botsley.run.behavior import *
 
 from wyggles.mathutils import *
 from wyggles.engine import *
-import wyggles.app
 from wyggles.wyggle.brain import WyggleBrain
 from wyggles.fruit import Fruit
 from wyggles.ball import Ball
@@ -32,12 +33,12 @@ class SeesFood(Neuron):
     def activate(self):
         t = Trigger(Assert, Believe, _I, _see, _x)
         async def action(task, msg):
-            print("Match:", msg.data.obj)
+            logger.debug(f"Match: {msg.data.obj}")
 
         self.rule = self.bot.subscribe(t, action)
 
     def main(self):
-        print('Sees Food')
+        logger.debug('Sees Food')
         beacons = sprite_engine.query(self.bot.x, self.bot.y, self.bot.sensor_range)
         self.focus = None
         for beacon in beacons:
@@ -87,7 +88,7 @@ class SeesBall(Neuron):
         self.focus = None
 
     def main(self):
-        print('Sees Ball', self.bot.x, self.bot.y)
+        logger.debug(f'Sees Ball {self.bot.x}, {self.bot.y}')
         beacons = sprite_engine.query(self.bot.x, self.bot.y, self.bot.sensor_range)
         self.focus = None
         for beacon in beacons:

@@ -1,5 +1,6 @@
-from .helpers import *
+from loguru import logger
 
+from .helpers import *
 
 class method:
     def __init__(self, instance, func):
@@ -20,7 +21,7 @@ class Neuron:
     @property
     def activity(self):
         level = self.main()
-        print(level)
+        logger.debug(f"neuron level: {level}")
         return level
 
     def main(self):

@@ -1,5 +1,3 @@
-#TODO: placeholder for future use
-
 from setuptools.command.develop import develop as _develop
 
 class develop(_develop):

@@ -307,7 +307,6 @@ pyglet.app.event_loop = event_loop = MyEventLoop()
 
 @event_loop.event
 def on_window_close(window):
-    print('close')
     event_loop.exit()
     return pyglet.event.EVENT_HANDLED
 

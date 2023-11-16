@@ -1,5 +1,3 @@
-#TODO: placeholder for future use
-
 from setuptools.command.install import install as _install
 
 class install(_install):
