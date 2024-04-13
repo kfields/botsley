@@ -39,7 +39,7 @@ class Task:
         self.result: Any = None
 
         self.id = uuid1()
-        self.bot = None
+        self.bot: Task = None
         self.parent: Task = None
         self.children: List[Task] = []
         self.status = TS_INITIAL
@@ -100,7 +100,6 @@ class Task:
     def strategy(self, child: 'Task'):
         status = child.status
         if status == TS_FAILURE:
-            # raise Failure()
             return status
         elif status == TS_SUCCESS:
             return status
@@ -200,8 +199,8 @@ class Sleep(Trap):
 #
 class Runner:
     def __init__(self):
-        self.queue = []
-        self.callbacks = []
+        self.queue: List[Task] = []
+        self.callbacks: List[Callable] = []
 
     def trap(self, task):
         if isinstance(task, NoOp):
@@ -225,14 +224,14 @@ class Runner:
         if ready:
             self.queue.append(task)
 
-    def reschedule(self, task):
+    def reschedule(self, task: Task):
         task.status = TS_RUNNING
         self.queue.append(task)
 
     def step(self):
         logger.debug("runner.step")
         queue = self.queue
-        self.queue = []
+        self.queue: List[Task] = []
         for task in queue:
             logger.debug(f"task {task}")
             logger.debug(f"task.status {task.status}")

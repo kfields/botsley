@@ -23,8 +23,8 @@ TILE_HEIGHT = 128
 
 TILE_SCALING = 1
 
-#SCREEN_WIDTH = int(COLUMNS * TILE_WIDTH * TILE_SCALING)
-#SCREEN_HEIGHT = int(ROWS * TILE_HEIGHT * TILE_SCALING)
+# SCREEN_WIDTH = int(COLUMNS * TILE_WIDTH * TILE_SCALING)
+# SCREEN_HEIGHT = int(ROWS * TILE_HEIGHT * TILE_SCALING)
 SCREEN_WIDTH = world_right
 SCREEN_HEIGHT = world_top
 SCREEN_TITLE = "Wyggles"
@@ -35,24 +35,31 @@ WYGGLE_COUNT = 3
 MAX_FOOD = 3
 # MAX_FOOD = 10
 
+
 def spawn_wyggle(layer):
     wyggle = Wyggle(layer)
     materialize_random_from_center(wyggle)
+
 
 def spawn_wyggles(layer):
     for count in range(WYGGLE_COUNT):
         spawn_wyggle(layer)
 
-#Balls
+
+# Balls
 def spawn_ball(layer):
     ball = Ball(layer)
-    ball.materialize_at(random.random() * (world_right - 100), random.random() * (world_top - 100))
+    ball.materialize_at(
+        random.random() * (world_right - 100), random.random() * (world_top - 100)
+    )
+
 
 def spawn_balls(layer):
     i = 0
-    while(i < 10):
+    while i < 10:
         i = i + 1
         spawn_ball(layer)
+
 
 def spawn_food(layer):
     fruitFactory = FruitFactory(layer)
@@ -60,48 +67,57 @@ def spawn_food(layer):
         fruit = fruitFactory.create_random()
         materialize_random_from_center(fruit)
 
+
 def spawn_fruit(layer):
     fruitFactory = FruitFactory(layer)
     fruit = fruitFactory.create_random()
     materialize_random_from_center(fruit)
 
+
 def spawn_obstacle(sprite):
     body = pymunk.Body(body_type=pymunk.Body.STATIC)
     body.position = sprite.position
     shape = pymunk.Poly(body, sprite.hit_box)
-    shape.elasticity = .5
-    shape.friction = .9
+    shape.elasticity = 0.5
+    shape.friction = 0.9
     sprite_engine.space.add(body, shape)
-    #layer.append(shape)
+    # layer.append(shape)
 
-#Walls
+
+# Walls
 def spawn_wall(layer, x, y, w, z):
     body = pymunk.Body(body_type=pymunk.Body.STATIC)
-    body.position = x + (w-x)/2, y + (z-y)/2
-    shape = pymunk.Poly.create_box(body, (w-x, z-y))
-    shape.elasticity = .5
-    shape.friction = .9
+    body.position = x + (w - x) / 2, y + (z - y) / 2
+    shape = pymunk.Poly.create_box(body, (w - x, z - y))
+    shape.elasticity = 0.5
+    shape.friction = 0.9
     sprite_engine.space.add(body, shape)
-    #layer.append(shape)
+    # layer.append(shape)
+
 
 def spawn_walls(layer):
-    left = world_left 
-    left = world_bottom 
-    right = world_right 
+    left = world_left
+    left = world_bottom
+    right = world_right
     top = world_top
     thickness = 200
-    #North Wall
-    spawn_wall(layer, left-thickness, left-thickness, right+thickness, left)
-    #East Wall
-    spawn_wall(layer, right, left-thickness, right+thickness, top+thickness)
-    #South Wall
-    spawn_wall(layer, left-thickness, top, right+thickness, top+thickness)
-    #West Wall
-    spawn_wall(layer, left-thickness, left-thickness, left, top+thickness)
+    # North Wall
+    spawn_wall(layer, left - thickness, left - thickness, right + thickness, left)
+    # East Wall
+    spawn_wall(layer, right, left - thickness, right + thickness, top + thickness)
+    # South Wall
+    spawn_wall(layer, left - thickness, top, right + thickness, top + thickness)
+    # West Wall
+    spawn_wall(layer, left - thickness, left - thickness, left, top + thickness)
+
 
 class PhysicsSprite(arcade.Sprite):
     def __init__(self, pymunk_shape, filename):
-        super().__init__(filename, center_x=pymunk_shape.body.position.x, center_y=pymunk_shape.body.position.y)
+        super().__init__(
+            filename,
+            center_x=pymunk_shape.body.position.x,
+            center_y=pymunk_shape.body.position.y,
+        )
         self.pymunk_shape = pymunk_shape
 
 
@@ -120,7 +136,7 @@ class BoxSprite(PhysicsSprite):
 
 
 class MyGame(arcade.Window):
-    """ Main application class. """
+    """Main application class."""
 
     def __init__(self, width, height, title):
         super().__init__(width, height, title, resizable=True)
@@ -132,32 +148,33 @@ class MyGame(arcade.Window):
         # -- Pymunk
         self.space = sprite_engine.space
 
-        my_map = arcade.tilemap.load_tilemap(asset('level1.json'))
+        my_map = arcade.tilemap.load_tilemap(asset("level1.json"))
 
-        self.layers.append(my_map.sprite_lists['ground'])
+        self.layers.append(my_map.sprite_lists["ground"])
 
-        self.layers.append(my_map.sprite_lists['enemy'])
+        self.layers.append(my_map.sprite_lists["enemy"])
 
-
-        self.wyggle_layer = Layer('wyggles')
+        self.wyggle_layer = Layer("wyggles")
         self.layers.append(self.wyggle_layer)
         spawn_wyggles(self.wyggle_layer)
 
-        self.ball_layer = Layer('balls')
+        self.ball_layer = Layer("balls")
         self.layers.append(self.ball_layer)
         spawn_balls(self.ball_layer)
 
-        self.food_layer = Layer('food')
+        self.food_layer = Layer("food")
         self.layers.append(self.food_layer)
         spawn_food(self.food_layer)
 
-        wyggles.app.landscape_layer = self.landscape_layer = landscape_layer = my_map.sprite_lists['landscape']
+        wyggles.app.landscape_layer = (
+            self.landscape_layer
+        ) = landscape_layer = my_map.sprite_lists["landscape"]
         self.layers.append(landscape_layer)
         for sprite in landscape_layer:
             spawn_obstacle(sprite)
 
         # Lists of sprites or lines
-        self.sprite_list = Layer('walls')
+        self.sprite_list = Layer("walls")
         self.layers.append(self.sprite_list)
         self.static_lines = []
 
@@ -194,8 +211,9 @@ class MyGame(arcade.Window):
             focus = brain.focus
             if not focus:
                 continue
-            arcade.draw_line(wyggle.x, wyggle.y, focus.x, focus.y, arcade.color.BLACK, 1)
-
+            arcade.draw_line(
+                wyggle.x, wyggle.y, focus.x, focus.y, arcade.color.BLACK, 1
+            )
 
         # Display timings
         output = f"Processing time: {self.processing_time:.3f}"
@@ -250,6 +268,7 @@ class MyGame(arcade.Window):
         self.food_layer.on_update(delta_time)
         if len(self.food_layer) < MAX_FOOD and not self.respawning_food:
             self.respawning_food = True
+
             def re_spawn(dt, *args, **kwargs):
                 spawn_fruit(self.food_layer)
                 self.respawning_food = False
@@ -282,35 +301,34 @@ class MyGame(arcade.Window):
         self.processing_time = timeit.default_timer() - start_time
 
 
-#def main():
 MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
-#arcade.run()
-#pyglet.app.run()
-#pyglet.app.EventLoop().run()
-#pyglet.app.event_loop.run()
 
 class MyEventLoop(pyglet.app.EventLoop):
     pass
-    '''
+    """
     def idle(self):
         runner.step()
         return super().idle()
-    '''
+    """
 
-def step_runner(delta_time):
+
+def step_runner(delta_time: float):
     runner.step()
 
-pyglet.clock.schedule_interval(step_runner, .25)
+
+pyglet.clock.schedule_interval(step_runner, 0.25)
 
 pyglet.app.event_loop = event_loop = MyEventLoop()
+
 
 @event_loop.event
 def on_window_close(window):
     event_loop.exit()
     return pyglet.event.EVENT_HANDLED
 
+
 event_loop.run()
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    main()
